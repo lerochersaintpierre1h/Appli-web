@@ -62,60 +62,66 @@
   <!-- APPLICATION PRINCIPALE -->
   <div x-show="isAuthenticated" class="w-full" x-cloak>
     
-    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30 p-2 sm:p-3 flex flex-col gap-2">
-      <div class="flex items-center justify-between w-full">
-        <div class="flex items-center space-x-3">
-          <img src="logo-menu-appli.png" alt="Logo" class="h-6 sm:h-7 w-auto object-contain" onerror="this.style.display='none'">
-          <h1 class="text-base sm:text-lg font-bold tracking-wide">Rocher 1H</h1>
+    <!-- EN-TÊTE SUR UNE SEULE LIGNE -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30 py-3 px-4">
+      <div class="max-w-[1800px] mx-auto flex flex-row items-center justify-between w-full overflow-x-auto no-scrollbar gap-4">
+        
+        <!-- GAUCHE : Logo, Titre et Déconnexion -->
+        <div class="flex items-center space-x-3 shrink-0">
+          <img src="logo-menu-appli.png" alt="Logo" class="h-7 w-auto object-contain" onerror="this.style.display='none'">
+          <h1 class="text-lg font-bold tracking-wide whitespace-nowrap">Rocher Saint Pierre 1H</h1>
+          <button @click="logout()" class="text-slate-400 hover:text-rose-400 text-[10px] uppercase font-bold border border-slate-700 hover:border-rose-400 px-2 py-1 rounded transition-colors ml-2 whitespace-nowrap">
+            Déconnexion
+          </button>
         </div>
-        <button @click="logout()" class="text-slate-400 hover:text-white text-xs font-medium border border-slate-700 px-2 py-1 rounded">Déconnexion</button>
-      </div>
 
-      <div class="flex flex-wrap items-center gap-2 w-full justify-between">
-        <div class="flex items-center gap-2">
+        <!-- DROITE : Badges et Boutons -->
+        <div class="flex items-center space-x-3 shrink-0 ml-auto">
+          <!-- HEURE VÉRIF BOOKING -->
+          <div x-show="lastBookingSync !== ''" class="flex items-center bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-semibold text-blue-300 whitespace-nowrap">
+            <span x-text="'vérif Booking : ' + lastBookingSync"></span>
+          </div>
+
           <!-- VOYANT SYNCHRO FIREBASE -->
-          <div class="flex items-center space-x-1.5 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700 text-[10px] sm:text-xs font-semibold">
+          <div class="flex items-center space-x-1.5 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-semibold whitespace-nowrap">
             <template x-if="syncStatus === 'synced'">
-              <div class="flex items-center space-x-1 text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>Synchro Firebase</span></div>
+              <div class="flex items-center space-x-1 text-emerald-400"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span><span>Synchro</span></div>
             </template>
             <template x-if="syncStatus === 'saving'">
-              <div class="flex items-center space-x-1 text-amber-400"><span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span><span>Sauvegarde</span></div>
+              <div class="flex items-center space-x-1 text-amber-400"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span><span>Sauvegarde</span></div>
             </template>
             <template x-if="syncStatus === 'error'">
-              <div class="flex items-center space-x-1 text-rose-400"><span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Erreur Firebase</span></div>
+              <div class="flex items-center space-x-1 text-rose-400"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span><span>Erreur Firebase</span></div>
             </template>
           </div>
 
-          <!-- HEURE VÉRIF BOOKING -->
-          <div x-show="lastBookingSync !== ''" class="flex items-center bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700 text-[10px] sm:text-xs font-semibold text-blue-300">
-            <span x-text="'Booking : ' + lastBookingSync"></span>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div class="flex items-center space-x-1 sm:space-x-2 bg-slate-800 p-1 rounded-lg border border-slate-700">
-            <button @click="changeGlobalYear(-1)" class="p-1 rounded hover:bg-slate-700 text-white transition"><i data-lucide="chevron-left" class="w-3 h-3 sm:w-4 sm:h-4"></i></button>
-            <span class="w-10 font-extrabold text-center text-emerald-400 text-xs sm:text-sm" x-text="currentYear"></span>
-            <button @click="changeGlobalYear(1)" class="p-1 rounded hover:bg-slate-700 text-white transition"><i data-lucide="chevron-right" class="w-3 h-3 sm:w-4 sm:h-4"></i></button>
+          <!-- SÉLECTEUR ANNÉE -->
+          <div class="flex items-center space-x-2 bg-slate-800 p-1.5 rounded-lg border border-slate-700 whitespace-nowrap">
+            <span class="text-xs font-bold text-slate-300 ml-1">Année :</span>
+            <button @click="changeGlobalYear(-1)" class="p-1 rounded hover:bg-slate-700 text-white transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+            <span class="w-12 font-extrabold text-center text-emerald-400 text-sm" x-text="currentYear"></span>
+            <button @click="changeGlobalYear(1)" class="p-1 rounded hover:bg-slate-700 text-white transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
           </div>
           
-          <button @click="openModalNewRes()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-2 py-1.5 rounded-lg flex items-center shadow transition text-[10px] sm:text-xs">
-            <i data-lucide="plus-circle" class="w-3 h-3 mr-1"></i> Nouvelle
+          <!-- BOUTON NOUVELLE RESA -->
+          <button @click="openModalNewRes()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-lg flex items-center shadow transition text-sm whitespace-nowrap">
+            <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Nouvelle réservation
           </button>
         </div>
       </div>
+      
+      <!-- NAVIGATION ONGLETS -->
+      <nav class="max-w-[1800px] mx-auto flex space-x-2 border-t border-slate-800 pt-2 mt-2 overflow-x-auto no-scrollbar">
+        <button @click="switchTab('calendrier')" :class="tab === 'calendrier' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-4 py-2 text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="calendar" class="w-4 h-4 mr-2"></i> Dispos</button>
+        <button @click="switchTab('reservations')" :class="tab === 'reservations' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-4 py-2 text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="list" class="w-4 h-4 mr-2"></i> Réservations</button>
+        <button @click="switchTab('paiements')" :class="tab === 'paiements' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-4 py-2 text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="credit-card" class="w-4 h-4 mr-2"></i> Paiements</button>
+        <button @click="switchTab('tarifs')" :class="tab === 'tarifs' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-4 py-2 text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="tag" class="w-4 h-4 mr-2"></i> Tarifs</button>
+        <button @click="switchTab('donnees')" :class="tab === 'donnees' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-4 py-2 text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="settings" class="w-4 h-4 mr-2"></i> Données</button>
+        <button @click="switchTab('comptabilite')" :class="tab === 'comptabilite' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-4 py-2 text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="calculator" class="w-4 h-4 mr-2"></i> Compta</button>
+      </nav>
     </header>
 
-    <nav class="bg-slate-900 px-2 sm:px-4 flex space-x-1 sm:space-x-2 border-t border-slate-800 overflow-x-auto no-scrollbar">
-      <button @click="switchTab('calendrier')" :class="tab === 'calendrier' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="calendar" class="w-4 h-4 mr-2"></i> Dispos</button>
-      <button @click="switchTab('reservations')" :class="tab === 'reservations' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="list" class="w-4 h-4 mr-2"></i> Réservations</button>
-      <button @click="switchTab('paiements')" :class="tab === 'paiements' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="credit-card" class="w-4 h-4 mr-2"></i> Paiements</button>
-      <button @click="switchTab('tarifs')" :class="tab === 'tarifs' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="tag" class="w-4 h-4 mr-2"></i> Tarifs</button>
-      <button @click="switchTab('donnees')" :class="tab === 'donnees' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="settings" class="w-4 h-4 mr-2"></i> Données</button>
-      <button @click="switchTab('comptabilite')" :class="tab === 'comptabilite' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium flex items-center rounded-t-lg transition whitespace-nowrap"><i data-lucide="calculator" class="w-4 h-4 mr-2"></i> Compta</button>
-    </nav>
-
-    <main class="max-w-[1800px] mx-auto p-2 sm:p-6 w-full overflow-x-hidden">
+    <main class="max-w-[1800px] mx-auto p-4 sm:p-6 w-full overflow-x-hidden">
 
       <!-- ONGLET CALENDRIER -->
       <section x-show="tab === 'calendrier'" x-cloak>
@@ -471,11 +477,11 @@
         </div>
       </div>
 
-      <!-- MODALE : MODIFIER RÉSERVATION -->
+      <!-- MODALE : MODIFIER RÉSERVATION (FICHE CLIENT COMPLÈTE) -->
       <div x-show="showModalEdit" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" x-cloak>
         <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 relative">
           <button @click="showModalEdit = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
-          <h3 class="text-xl font-bold text-slate-900 mb-4 border-b pb-2">Modifier la Réservation</h3>
+          <h3 class="text-xl font-bold text-slate-900 mb-4 border-b pb-2">Modifier la Fiche Client & Réservation</h3>
           
           <form @submit.prevent="submitEditReservation()" class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
@@ -520,6 +526,18 @@
                   <button type="button" @click="editForm.nbEnfant = (editForm.nbEnfant || 0) + 1" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold border-l">+</button>
                 </div>
               </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Téléphone</label><input type="tel" x-model="editForm.telephone" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"></div>
+              <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email</label><input type="email" x-model="editForm.email" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"></div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4">
+              <div class="col-span-3"><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Adresse</label><input type="text" x-model="editForm.adresse" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"></div>
+              <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Code Postal</label><input type="text" x-model="editForm.codePostal" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"></div>
+              <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ville</label><input type="text" x-model="editForm.ville" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"></div>
+              <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pays</label><input type="text" x-model="editForm.pays" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"></div>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4 border-t">
