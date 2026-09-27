@@ -56,7 +56,6 @@ function app() {
     currentYear: (new Date().getMonth() >= 8) ? new Date().getFullYear() + 1 : new Date().getFullYear(),
     todayYear: new Date().getFullYear(),
     selectedDocResId: null,
-    docType: 'contrat',
     calendarMonths: [],
     gridTarifs: {},
     comptaData: {},
@@ -269,6 +268,22 @@ function app() {
       }, 800);
     },
 
+    saveReservation(res) {
+      if (!this.isLoaded || !res || !res.id) return;
+      this.syncStatus = 'saving';
+      this.saveLocalBackup();
+
+      clearTimeout(res.saveResTimeout);
+      res.saveResTimeout = setTimeout(() => {
+        const cleanRes = JSON.parse(JSON.stringify(res));
+        delete cleanRes.saveResTimeout; 
+        
+        db.collection("locations").doc("rocher1H").collection("reservations").doc(String(res.id)).set(cleanRes, { merge: true })
+          .then(() => { this.syncStatus = 'synced'; })
+          .catch(e => { console.error("Erreur Firestore sur la réservation :", e); this.syncStatus = 'error'; });
+      }, 800);
+    },
+
     // --- SYNCHRONISATION BOOKING ICAL VIA FIREBASE CLOUD FUNCTION ---
     async syncBookingICal(manual = false) {
       if (!this.donnees.urlBookingIcal) {
@@ -279,8 +294,6 @@ function app() {
       try {
         const separator = this.donnees.urlBookingIcal.includes('?') ? '&' : '?';
         const finalBookingUrl = this.donnees.urlBookingIcal + separator + "v=" + Date.now();
-        
-        // URL de la Cloud Function
         const cloudFunctionUrl = "https://us-central1-rochersaintpierre1h.cloudfunctions.net/getBookingIcal?url=" + encodeURIComponent(finalBookingUrl);
 
         const res = await fetch(cloudFunctionUrl);
@@ -415,48 +428,6 @@ function app() {
       return events;
     },
 
-    exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ donnees: this.donnees, gridTarifs: this.gridTarifs, reservations: this.reservations, comptaData: this.comptaData }, null, 2));
-      const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", `sauvegarde_rocher_${new Date().toISOString().slice(0, 10)}.json`);
-      document.body.appendChild(dl); dl.click(); dl.remove();
-    },
-
-    importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (!imported.reservations || imported.reservations.length === 0) return alert("Aucune réservation trouvée.");
-
-          if (confirm(`Importer et migrer ${imported.reservations.length} réservation(s) ?`)) {
-            db.collection("locations").doc("rocher1H").set({
-              donnees: imported.donnees || this.donnees,
-              gridTarifs: imported.gridTarifs || this.gridTarifs,
-              comptaData: imported.comptaData || this.comptaData
-            }, { merge: true });
-
-            const batch = db.batch();
-            imported.reservations.forEach(res => {
-              const docRef = db.collection("locations").doc("rocher1H").collection("reservations").doc(String(res.id));
-              batch.set(docRef, res);
-            });
-            
-            batch.commit().then(() => {
-              alert(`SUCCÈS : Migration terminée !`);
-              this.saveAll();
-            }).catch(err => alert("Erreur d'écriture : " + err.message));
-          }
-        } catch (err) { alert("Erreur de lecture : " + err.message); }
-      };
-      reader.readAsText(file);
-    },
-
-    triggerFileInput() { 
-      document.getElementById('importFileInput').click(); 
-    },
-
     switchTab(tabName) {
       this.tab = tabName;
       this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
@@ -557,30 +528,6 @@ function app() {
       });
       
       return Array.from(stats.values()).sort((a, b) => a.nomPrenom.localeCompare(b.nomPrenom));
-    },
-
-    exportClientsCSV() {
-      const clients = this.allClientsStats;
-      let csvContent = "\uFEFFNom et Prénom;Téléphone;Email;Adresse Postale;Nombre de Séjours\n";
-      
-      clients.forEach(c => {
-        const nom = `"${c.nomPrenom.replace(/"/g, '""')}"`;
-        const tel = `"${c.telephone.replace(/"/g, '""')}"`;
-        const email = `"${c.email.replace(/"/g, '""')}"`;
-        const adresse = `"${c.adresseComplete.replace(/"/g, '""')}"`;
-        const sejours = c.nbSejours;
-        
-        csvContent += `${nom};${tel};${email};${adresse};${sejours}\n`;
-      });
-      
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const dl = document.createElement('a');
-      dl.setAttribute('href', url);
-      dl.setAttribute('download', `Base_Clients_Rocher_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(dl);
-      dl.click();
-      dl.remove();
     },
 
     loadClientIntoForm(clientId) {
@@ -895,8 +842,10 @@ function app() {
       return { public: 400, booking: 550, correction: 550, libre: 0 };
     },
 
-    getReservationForTarif(w) {
-      if (w.isCustom) return null;
+   getReservationForTarif(w) {
+      if (w.isCustom) {
+        return this.reservations.find(r => w.key === `CUST-${r.dateDebut}_${r.dateFin}`) || null;
+      }
       return this.reservations.find(r => r.dateDebut && r.dateFin && w.startISO >= r.dateDebut && w.endISO <= r.dateFin);
     },
 
@@ -920,7 +869,7 @@ function app() {
     
     calcResteAPayer(res) { return !res ? 0 : Math.max(0, this.calcTotalSejour(res) - (Number(res.acompte) || 0) - (Number(res.soldePaye) || 0)); },
 
-    updateReservationTarif(res) { res.prixTotal = this.calculateStayPrice(res.dateDebut, res.dateFin, res.codeTarif); this.saveAll(); },
+    updateReservationTarif(res) { res.prixTotal = this.calculateStayPrice(res.dateDebut, res.dateFin, res.codeTarif); this.saveReservation(res); },
     recalculateAllReservations() { this.reservations.forEach(r => { if (!r.codeTarif) r.codeTarif = 'public'; r.prixTotal = this.calculateStayPrice(r.dateDebut, r.dateFin, r.codeTarif); }); },
 
     openModalNewRes() { this.form = { nom: '', prenom: '', origine: 'booking', kitBebe: 'non', dateDebut: '', dateFin: '', nbAdulte: 1, nbEnfant: 0, telephone: '', email: '', adresse: '', codePostal: '', ville: '', pays: 'France' }; this.showModalNew = true; },
@@ -979,7 +928,7 @@ function app() {
     openClientCard(res) { this.selectedRes = res; this.showModalClient = true; this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); }); },
 
     calcNights(start, end) { return (!start || !end) ? 0 : Math.max(0, Math.round((new Date(end.split('-')[0], end.split('-')[1] - 1, end.split('-')[2]) - new Date(start.split('-')[0], start.split('-')[1] - 1, start.split('-')[2])) / (1000 * 60 * 60 * 24))); },
-    formatDate(dStr) { return !dStr ? '' : `${dStr.split('-')[2]}/${dStr.split('-')[1]}/${dStr.split('-')[0]}`; },
-    formatCurrency(val) { return (Number(val) || 0).toFixed(2) + ' €'; }
+    formatDate(dStr) { return !dStr ? '' : `${dStr.split('-')[2]}/${dStr.split('-')[1]}`; },
+    formatCurrency(val) { return (Number(val) || 0).toFixed(0) + ' €'; }
   }
-}
+} 
