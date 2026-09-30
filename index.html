@@ -321,7 +321,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white">
-                <template x-for="(res, index) in filteredReservationsByYear" :key="res.id">
+                <template x-for="(res, index) in filteredPaiementsByYear" :key="res.id">
                   <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-slate-50'" class="hover:bg-slate-100 transition text-center align-middle">
                     <td class="p-2 font-semibold text-slate-900 whitespace-nowrap text-left" x-text="res.nom + ' ' + (res.prenom || '')"></td>
                     
@@ -361,7 +361,7 @@
                     </td>
                   </tr>
                 </template>
-                <tr x-show="filteredReservationsByYear.length === 0">
+                <tr x-show="filteredPaiementsByYear.length === 0">
                   <td colspan="10" class="p-8 text-center text-slate-400 text-sm">Aucun dossier enregistré pour <span x-text="currentYear"></span>.</td>
                 </tr>
               </tbody>
@@ -413,7 +413,7 @@
                     
                     <!-- Champ correction réduit à w-12 et texte en 9px -->
                     <td class="p-1 text-center bg-orange-50/50">
-                      <input type="number" step="1" x-model.number="w.correction" :class="{'zero-clair': w.correction === 0}" @input="onTarifChange()" class="w-12 mx-auto text-center border rounded px-0.5 py-0.5 font-bold text-orange-900 focus:ring-2 focus:ring-orange-500 outline-none transition-colors bg-white shadow-sm text-[9px]">
+                      <input type="text" inputmode="decimal" x-model="w.correction" @input="w.correction = String(w.correction).replace(',', '.'); onTarifChange()" :class="{'zero-clair': Number(w.correction) === 0}" class="w-12 mx-auto text-center border rounded px-0.5 py-0.5 font-bold text-orange-900 focus:ring-2 focus:ring-orange-500 outline-none transition-colors bg-white shadow-sm text-[9px]">
                     </td>
                   </tr>
                 </template>
@@ -769,34 +769,6 @@
             <div>
               <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pays</label>
               <input type="text" x-model="editForm.pays" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-          </div>
-
-          <div class="mt-6 pt-4 border-t">
-            <h4 class="text-sm font-bold text-slate-800 mb-3">Saisie des Paiements</h4>
-            <div class="grid grid-cols-2 gap-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
-              <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Acompte versé (€)</label>
-                <input type="number" step="0.01" min="0" x-model.number="editForm.acompte" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Solde versé (€)</label>
-                <input type="number" step="0.01" min="0" x-model.number="editForm.soldePaye" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Caution Reçue</label>
-                <select x-model="editForm.cautionRecue" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                  <option value="non">Non</option>
-                  <option value="oui">Oui</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Caution Rendue</label>
-                <select x-model="editForm.cautionRendue" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                  <option value="non">Non</option>
-                  <option value="oui">Oui</option>
-                </select>
-              </div>
             </div>
           </div>
 
