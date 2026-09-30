@@ -63,7 +63,7 @@ function app() {
     showModalClient: false,
     showModalClientsList: false,
     selectedRes: null,
-
+donneesParAnnee: {}, // LIGNE À AJOUTER ICI
     donnees: { 
       nomConciergerie: '', 
       pctBooking: 19, 
@@ -165,6 +165,7 @@ function app() {
       db.collection("locations").doc("rocher1H").onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
+          if (data.donneesParAnnee) this.donneesParAnnee = data.donneesParAnnee;
           if (data.donnees) this.donnees = data.donnees;
           if (data.gridTarifs) this.gridTarifs = data.gridTarifs;
           if (data.comptaData) this.comptaData = data.comptaData;
@@ -771,8 +772,12 @@ function app() {
     get comptaCreditRestePersMois() { return this.comptaCreditReste / 24; },
 
     isDateClosed(dateStr) {
-      if (!this.donnees.fermetures) return false;
-      return this.donnees.fermetures.some(f => f.debut && f.fin && dateStr >= f.debut && dateStr <= f.fin);
+      if (!dateStr) return false;
+      const yr = dateStr.split('-')[0];
+      // On cherche les données de l'année spécifique, sinon on prend les données par défaut
+      const dSettings = (this.donneesParAnnee && this.donneesParAnnee[yr]) ? this.donneesParAnnee[yr] : this.donnees;
+      if (!dSettings || !dSettings.fermetures) return false;
+      return dSettings.fermetures.some(f => f.debut && f.fin && dateStr >= f.debut && dateStr <= f.fin);
     },
 
     clearFermeture(index) {
@@ -851,7 +856,7 @@ function app() {
 
     get filteredGridTarifs() { return Object.values(this.gridTarifs).filter(r => r.startISO && r.startISO.startsWith(String(this.currentYear))).sort((a, b) => a.startISO.localeCompare(b.startISO)); },
     get filteredReservationsByYear() { return this.reservations.filter(r => r.dateDebut && r.dateDebut.startsWith(String(this.currentYear))).sort((a, b) => a.dateDebut.localeCompare(b.dateDebut)); },
-
+    get filteredPaiementsByYear() { return this.filteredReservationsByYear.filter(r => !this.isPerso(r)); },
     getTarifRowForStay(dateDebut, dateFin) {
       const customKey = `CUST-${dateDebut}_${dateFin}`;
       if (this.gridTarifs[customKey]) return this.gridTarifs[customKey];
@@ -957,6 +962,6 @@ function app() {
 
     calcNights(start, end) { return (!start || !end) ? 0 : Math.max(0, Math.round((new Date(end.split('-')[0], end.split('-')[1] - 1, end.split('-')[2]) - new Date(start.split('-')[0], start.split('-')[1] - 1, start.split('-')[2])) / (1000 * 60 * 60 * 24))); },
     formatDate(dStr) { return !dStr ? '' : `${dStr.split('-')[2]}/${dStr.split('-')[1]}`; },
-    formatCurrency(val) { return (Number(val) || 0).toFixed(0) + ' €'; }
+    formatCurrency(val) { return (Number(val) || 0).toFixed(2) + ' €'; }
   }
 }
