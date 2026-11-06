@@ -387,77 +387,87 @@
 
       <!-- ONGLET COMPTABILITÉ -->
       <section x-show="tab === 'comptabilite'" x-cloak>
-        <div class="bg-white rounded-xl shadow p-6 mb-6">
-          <h2 class="text-xl font-bold text-slate-900 mb-6">Comptabilité & Bilan Financier — <span class="text-emerald-600" x-text="currentYear"></span></h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            <div class="border rounded-xl p-4 bg-slate-50 border-slate-200 shadow-sm flex flex-col text-xs">
-              <h3 class="font-extrabold text-slate-900 text-sm border-b pb-2 text-sky-800 uppercase tracking-wide mb-3">Synthèse Gains & Taxe de séjour</h3>
-              <div class="bg-rose-50/60 p-2.5 rounded border border-rose-200 space-y-2 shadow-sm">
+        <div class="bg-white rounded-xl shadow p-4 sm:p-6 mb-6">
+          <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-4 sm:mb-6">Comptabilité & Bilan — <span class="text-emerald-600" x-text="currentYear"></span></h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            
+            <!-- Colonne 1 : Synthèse -->
+            <div class="border rounded-xl p-3 sm:p-4 bg-slate-50 border-slate-200 shadow-sm flex flex-col">
+              <h3 class="font-extrabold text-slate-900 text-xs sm:text-sm border-b pb-2 text-sky-800 uppercase tracking-wide mb-3">Synthèse Gains & Taxe</h3>
+              
+              <div class="bg-rose-50/60 p-2 sm:p-2.5 rounded border border-rose-200 space-y-1.5 shadow-sm">
                 <div class="flex justify-between items-center">
-                  <span class="font-bold text-[11px] text-rose-900">TOTAL GAIN (Brut) :</span>
-                  <span class="font-extrabold text-rose-700 text-xs" x-text="formatCurrency(comptaMetrics.totalGainBrut)"></span>
+                  <span class="font-bold text-[9px] sm:text-[11px] text-rose-900 truncate">TOTAL GAIN (Brut) :</span>
+                  <span class="font-extrabold text-rose-700 text-[10px] sm:text-xs ml-2" x-text="formatCurrency(comptaMetrics.totalGainBrut)"></span>
                 </div>
                 <div class="flex justify-between items-center pt-1.5 border-t border-rose-200/70">
-                  <span class="font-bold text-[11px] text-rose-900">TOTAL OFFICIEL (Hors Black/Perso) :</span>
-                  <span class="font-extrabold text-rose-700 text-xs" x-text="formatCurrency(comptaMetrics.totalOfficiel)"></span>
+                  <span class="font-bold text-[9px] sm:text-[11px] text-rose-900 truncate">TOTAL OFFICIEL :</span>
+                  <span class="font-extrabold text-rose-700 text-[10px] sm:text-xs ml-2" x-text="formatCurrency(comptaMetrics.totalOfficiel)"></span>
                 </div>
               </div>
-              <div class="p-2.5 rounded border space-y-2 shadow-sm my-3 bg-cyan-50 border-cyan-200">
-                <div class="flex justify-between items-center"><span class="font-bold text-cyan-800 text-[11px]">Paiements reçus :</span><span class="font-extrabold text-xs text-cyan-900" x-text="formatCurrency(comptaMetrics.paiementsRecus)"></span></div>
-                <div class="flex justify-between items-center pt-1.5 border-t border-cyan-200"><span class="font-bold text-cyan-800 text-[11px]">Paiements à recevoir :</span><span class="font-extrabold text-xs text-cyan-900" x-text="formatCurrency(comptaMetrics.paiementsARecevoir)"></span></div>
+              
+              <div class="p-2 sm:p-2.5 rounded border space-y-1.5 shadow-sm my-2 sm:my-3 bg-cyan-50 border-cyan-200">
+                <div class="flex justify-between items-center"><span class="font-bold text-cyan-800 text-[9px] sm:text-[11px] truncate">Paiements reçus :</span><span class="font-extrabold text-[10px] sm:text-xs text-cyan-900 ml-2" x-text="formatCurrency(comptaMetrics.paiementsRecus)"></span></div>
+                <div class="flex justify-between items-center pt-1.5 border-t border-cyan-200"><span class="font-bold text-cyan-800 text-[9px] sm:text-[11px] truncate">Paiements à recevoir :</span><span class="font-extrabold text-[10px] sm:text-xs text-cyan-900 ml-2" x-text="formatCurrency(comptaMetrics.paiementsARecevoir)"></span></div>
               </div>
-             <div class="bg-amber-50/60 p-2.5 rounded border border-amber-200 space-y-2 shadow-sm">
-  <div class="flex justify-between items-center font-bold text-slate-800">
-    <span class="text-[11px]">Taxe de séjour calculée :</span>
-    <span class="text-amber-900 text-xs" x-text="formatCurrency(comptaMetrics.taxeCalculer)"></span>
-  </div>
-  
-  <div class="flex justify-between items-center">
-    <label class="text-[10px] font-semibold text-slate-600">Taxe de séjour payée (€) :</label>
-    <span class="font-bold text-slate-800 text-xs" x-text="formatCurrency((Number(getComptaYearData(currentYear).taxePayee)||0) + (Number(getComptaYearData(currentYear).taxePayeeT1)||0) + (Number(getComptaYearData(currentYear).taxePayeeT2)||0) + (Number(getComptaYearData(currentYear).taxePayeeT3)||0) + (Number(getComptaYearData(currentYear).taxePayeeT4)||0))"></span>
-  </div>
-  
-  <div class="flex justify-between items-center">
-    <label class="text-[10px] font-semibold text-slate-600">Taxe de séjour à retirer (€) :</label>
-    <span class="font-bold text-slate-800 text-xs" x-text="formatCurrency(getComptaYearData(currentYear).taxeARetirer)"></span>
-  </div>
+              
+              <div class="bg-amber-50/60 p-2 sm:p-2.5 rounded border border-amber-200 space-y-1.5 shadow-sm">
+                <div class="flex justify-between items-center font-bold text-slate-800">
+                  <span class="text-[9px] sm:text-[11px] truncate">Taxe de séjour calculée :</span>
+                  <span class="text-amber-900 text-[10px] sm:text-xs ml-2" x-text="formatCurrency(comptaMetrics.taxeCalculer)"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <label class="text-[9px] sm:text-[10px] font-semibold text-slate-600 truncate">Taxe payée (€) :</label>
+                  <span class="font-bold text-slate-800 text-[10px] sm:text-xs ml-2" x-text="formatCurrency((Number(getComptaYearData(currentYear).taxePayee)||0) + (Number(getComptaYearData(currentYear).taxePayeeT1)||0) + (Number(getComptaYearData(currentYear).taxePayeeT2)||0) + (Number(getComptaYearData(currentYear).taxePayeeT3)||0) + (Number(getComptaYearData(currentYear).taxePayeeT4)||0))"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <label class="text-[9px] sm:text-[10px] font-semibold text-slate-600 truncate">Taxe à retirer (€) :</label>
+                  <span class="font-bold text-slate-800 text-[10px] sm:text-xs ml-2" x-text="formatCurrency(getComptaYearData(currentYear).taxeARetirer)"></span>
+                </div>
+                <div class="flex justify-between items-center font-extrabold text-[9px] sm:text-[11px] pt-1.5 border-t border-amber-300">
+                  <span class="text-slate-800 truncate">Restant à payer :</span>
+                  <span class="text-[10px] sm:text-xs ml-2" :class="comptaTaxeRestante <= 0 ? 'text-emerald-700' : 'text-rose-700'" x-text="formatCurrency(comptaTaxeRestante)"></span>
+                </div>
+              </div>
+            </div>
 
-  <div class="flex justify-between items-center font-extrabold text-[11px] pt-1.5 border-t border-amber-300">
-    <span class="text-slate-800">Taxe restant à payer :</span>
-    <span class="text-xs" :class="comptaTaxeRestante <= 0 ? 'text-emerald-700' : 'text-rose-700'" x-text="formatCurrency(comptaTaxeRestante)"></span>
-  </div>
-</div>
-
+            <!-- Colonne 2 : Bilan -->
             <div class="flex flex-col gap-4">
-              <div class="border rounded-xl p-4 bg-slate-900 text-white shadow-md space-y-3">
+              <div class="border rounded-xl p-3 sm:p-4 bg-slate-900 text-white shadow-md space-y-2 sm:space-y-3">
                 <h3 class="font-extrabold text-emerald-400 text-xs border-b border-slate-700 pb-2 uppercase tracking-wide">Récapitulatif Général</h3>
-                <div class="grid grid-cols-1 gap-2 text-[11px] mt-2">
-                  <div class="space-y-1.5 bg-slate-800 p-2.5 rounded-lg border border-slate-700">
-                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300">Taxe de Séjour :</span><span class="font-bold text-amber-300" x-text="formatCurrency(comptaMetrics.taxeCalculer)"></span></div>
-                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300">Coût Conciergerie :</span><span class="font-bold text-emerald-300" x-text="formatCurrency(comptaMetrics.coutTotalConciergerie)"></span></div>
-                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300">Total Copro, Énergie, Taxes :</span><span class="font-bold text-orange-300" x-text="formatCurrency(comptaTotalRambaud + comptaTotalSorea + comptaTotalTaxesDirectes)"></span></div>
-                    <div class="flex justify-between items-center"><span class="font-semibold text-slate-300">Impôts & Assurances :</span><span class="font-bold text-rose-300" x-text="formatCurrency(comptaCalculImpots.totalImpots + (Number(getComptaYearData(currentYear).assuranceAppart)||0) + (Number(getComptaYearData(currentYear).assuranceCredit)||0))"></span></div>
+                <div class="grid grid-cols-1 gap-2 mt-2">
+                  <div class="space-y-1.5 bg-slate-800 p-2 sm:p-2.5 rounded-lg border border-slate-700">
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300 text-[9px] sm:text-[11px] truncate">Taxe de Séjour :</span><span class="font-bold text-amber-300 text-[10px] sm:text-xs ml-2" x-text="formatCurrency(comptaMetrics.taxeCalculer)"></span></div>
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300 text-[9px] sm:text-[11px] truncate">Coût Conciergerie :</span><span class="font-bold text-emerald-300 text-[10px] sm:text-xs ml-2" x-text="formatCurrency(comptaMetrics.coutTotalConciergerie)"></span></div>
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300 text-[9px] sm:text-[11px] truncate">Copro, Énergie, Taxes :</span><span class="font-bold text-orange-300 text-[10px] sm:text-xs ml-2" x-text="formatCurrency(comptaTotalRambaud + comptaTotalSorea + comptaTotalTaxesDirectes)"></span></div>
+                    <div class="flex justify-between items-center"><span class="font-semibold text-slate-300 text-[9px] sm:text-[11px] truncate">Impôts & Assurances :</span><span class="font-bold text-rose-300 text-[10px] sm:text-xs ml-2" x-text="formatCurrency(comptaCalculImpots.totalImpots + (Number(getComptaYearData(currentYear).assuranceAppart)||0) + (Number(getComptaYearData(currentYear).assuranceCredit)||0))"></span></div>
                   </div>
                 </div>
                 <div class="mt-2 grid grid-cols-1 gap-2">
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-rose-500/30 flex justify-between items-center"><span class="text-[10px] font-extrabold uppercase text-slate-300">Charges Annuelles :</span><span class="text-xs font-bold text-rose-400" x-text="formatCurrency(comptaTotalGeneralCharges)"></span></div>
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-emerald-500/30 flex justify-between items-center"><span class="text-[10px] font-extrabold uppercase text-slate-300">Gain (Brut) :</span><span class="text-xs font-bold text-emerald-400" x-text="formatCurrency(comptaMetrics.totalGainBrut)"></span></div>
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-sky-500/30 flex justify-between items-center"><span class="text-[10px] font-extrabold uppercase text-slate-300">Restant (Gain - Charges) :</span><span class="text-xs font-bold" :class="comptaRestantTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'" x-text="formatCurrency(comptaRestantTotal)"></span></div>
+                  <div class="bg-slate-800 p-2 sm:p-2.5 rounded-lg border border-rose-500/30 flex justify-between items-center"><span class="text-[8px] sm:text-[10px] font-extrabold uppercase text-slate-300 truncate">Charges Annuelles :</span><span class="text-[10px] sm:text-xs font-bold text-rose-400 ml-2" x-text="formatCurrency(comptaTotalGeneralCharges)"></span></div>
+                  <div class="bg-slate-800 p-2 sm:p-2.5 rounded-lg border border-emerald-500/30 flex justify-between items-center"><span class="text-[8px] sm:text-[10px] font-extrabold uppercase text-slate-300 truncate">Gain (Brut) :</span><span class="text-[10px] sm:text-xs font-bold text-emerald-400 ml-2" x-text="formatCurrency(comptaMetrics.totalGainBrut)"></span></div>
+                  <div class="bg-slate-800 p-2 sm:p-2.5 rounded-lg border border-sky-500/30 flex justify-between items-center"><span class="text-[8px] sm:text-[10px] font-extrabold uppercase text-slate-300 truncate">Restant (Net) :</span><span class="text-[10px] sm:text-xs font-bold ml-2" :class="comptaRestantTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'" x-text="formatCurrency(comptaRestantTotal)"></span></div>
                 </div>
               </div>
 
-              <div class="border rounded-xl p-4 bg-slate-900 text-white shadow-md space-y-3">
-                <h3 class="font-extrabold text-sky-400 text-xs border-b border-slate-700 pb-2 uppercase tracking-wide">Bilan & Financement Crédit</h3>
+              <div class="border rounded-xl p-3 sm:p-4 bg-slate-900 text-white shadow-md space-y-2 sm:space-y-3">
+                <h3 class="font-extrabold text-sky-400 text-xs border-b border-slate-700 pb-2 uppercase tracking-wide">Bilan & Financement</h3>
                 <div class="grid grid-cols-2 gap-2 mt-2">
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center">
-  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Coût Crédit Annuel</span>
-  <span class="text-sm font-bold text-slate-100" x-text="formatCurrency(comptaCreditAnnuel)"></span>
-  
-  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-3 mb-1">Soit par pers. / mois</span>
-  <span class="text-sm font-bold text-slate-100" x-text="formatCurrency(comptaCreditAnnuel / 24)"></span>
-</div>
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center"><span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Restant à Financer</span><span class="text-sm font-bold" :class="comptaCreditReste > 0 ? 'text-rose-400' : 'text-emerald-400'" x-text="formatCurrency(comptaCreditReste)"></span></div>
-                  <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center col-span-2 shadow-[0_0_15px_rgba(14,165,233,0.15)]"><span class="text-[10px] font-bold uppercase tracking-wider text-sky-300 mb-1">Effort / Personne / Mois</span><span class="text-base font-bold" :class="comptaCreditRestePersMois > 0 ? 'text-rose-400' : 'text-emerald-400'" x-text="formatCurrency(comptaCreditRestePersMois)"></span></div>
+                  <div class="bg-slate-800 p-2 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center">
+                    <span class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Crédit Annuel</span>
+                    <span class="text-xs sm:text-sm font-bold text-slate-100" x-text="formatCurrency(comptaCreditAnnuel)"></span>
+                    <span class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-2 mb-0.5">Par pers/mois</span>
+                    <span class="text-xs sm:text-sm font-bold text-slate-100" x-text="formatCurrency(comptaCreditAnnuel / 24)"></span>
+                  </div>
+                  <div class="bg-slate-800 p-2 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center">
+                    <span class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Restant à Financer</span>
+                    <span class="text-xs sm:text-sm font-bold" :class="comptaCreditReste > 0 ? 'text-rose-400' : 'text-emerald-400'" x-text="formatCurrency(comptaCreditReste)"></span>
+                  </div>
+                  <div class="bg-slate-800 p-2 sm:p-3 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center col-span-2 shadow-[0_0_15px_rgba(14,165,233,0.15)]">
+                    <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-sky-300 mb-0.5">Effort / Pers. / Mois</span>
+                    <span class="text-sm sm:text-base font-bold" :class="comptaCreditRestePersMois > 0 ? 'text-rose-400' : 'text-emerald-400'" x-text="formatCurrency(comptaCreditRestePersMois)"></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -468,38 +478,41 @@
     </main>
     
     <!-- MODAL NOUVELLE RÉSERVATION -->
-    <div x-show="showModalNew" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" x-cloak>
-      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 relative">
-        <button @click="showModalNew = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
+    <div x-show="showModalNew" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4" x-cloak>
+      
+      <!-- L'ajout de max-h-[90vh] et overflow-y-auto permet à la modale de scroller sur iPhone -->
+      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
+        <button @click="showModalNew = false" class="absolute top-3 right-3 sm:top-4 sm:right-4 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
         
-        <h3 class="text-xl font-bold text-slate-900 mb-6 pb-2 text-center">Créer une Réservation</h3>
+        <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-4 border-b pb-2 text-center">Créer une Réservation</h3>
         
-        <div class="mb-6 bg-amber-50/50 p-4 rounded-2xl border border-amber-100" x-show="knownClients.length > 0">
-          <label class="block text-[11px] font-bold text-amber-800 uppercase mb-2 text-center">Remplissage rapide (Ancien client)</label>
-          <select @change="loadClientIntoForm($event.target.value)" class="w-full border-amber-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white text-center text-slate-700">
-            <option value="">-- Sélectionner un client déjà venu --</option>
+        <div class="mb-4 bg-amber-50/50 p-3 rounded-2xl border border-amber-100" x-show="knownClients.length > 0">
+          <label class="block text-[10px] font-bold text-amber-800 uppercase mb-1.5 text-center">Remplissage rapide</label>
+          <select @change="loadClientIntoForm($event.target.value)" class="w-full border border-amber-200 rounded-full px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white text-center text-slate-700">
+            <option value="">-- Ancien client --</option>
             <template x-for="client in knownClients" :key="client.id">
-              <option :value="client.id" x-text="client.nom + ' ' + (client.prenom || '') + ' (' + (client.email || 'Pas d\'email') + ')'"></option>
+              <option :value="client.id" x-text="client.nom + ' ' + (client.prenom || '')"></option>
             </template>
           </select>
         </div>
 
-        <form @submit.prevent="submitReservation()" class="space-y-5">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <!-- Réduction des espaces (space-y-3, gap-3) sur mobile, et normaux sur Mac (sm:space-y-5) -->
+        <form @submit.prevent="submitReservation()" class="space-y-3 sm:space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Nom *</label>
-              <input type="text" x-model="form.nom" required class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Nom *</label>
+              <input type="text" x-model="form.nom" required class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Prénom *</label>
-              <input type="text" x-model="form.prenom" required class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Prénom *</label>
+              <input type="text" x-model="form.prenom" required class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Origine réservation</label>
-              <select x-model="form.origine" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Origine</label>
+              <select x-model="form.origine" class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
                 <option value="booking">Booking</option>
                 <option value="valloire résa">Valloire Résa</option>
                 <option value="perso">Perso</option>
@@ -507,77 +520,65 @@
               </select>
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Kit Bébé</label>
-              <select x-model="form.kitBebe" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Kit Bébé</label>
+              <select x-model="form.kitBebe" class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
                 <option value="non">Non</option>
                 <option value="oui">Oui</option>
               </select>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 p-4 rounded-2xl border border-slate-100">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 p-3 sm:p-4 rounded-2xl border border-slate-100">
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Date d'arrivée *</label>
-              <input type="date" x-model="form.dateDebut" @change="onStartDateChange()" required class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center text-slate-600">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Arrivée *</label>
+              <input type="date" x-model="form.dateDebut" @change="onStartDateChange()" required class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center text-slate-600">
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Date de départ *</label>
-              <input type="date" x-model="form.dateFin" :min="form.dateDebut" required class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center text-slate-600">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Départ *</label>
+              <input type="date" x-model="form.dateFin" :min="form.dateDebut" required class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center text-slate-600">
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Adultes</label>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Adultes</label>
               <div class="flex items-center rounded-full border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden">
-                <button type="button" @click="form.nbAdulte = Math.max(1, (form.nbAdulte || 1) - 1)" class="w-12 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-r">-</button>
-                <input type="number" min="1" x-model.number="form.nbAdulte" class="w-full text-center py-2 text-sm outline-none font-bold text-slate-700 bg-transparent">
-                <button type="button" @click="form.nbAdulte = (form.nbAdulte || 0) + 1" class="w-12 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-l">+</button>
+                <button type="button" @click="form.nbAdulte = Math.max(1, (form.nbAdulte || 1) - 1)" class="w-12 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold border-r">-</button>
+                <input type="number" min="1" x-model.number="form.nbAdulte" class="w-full text-center py-1.5 sm:py-2 text-sm outline-none font-bold text-slate-700 bg-transparent">
+                <button type="button" @click="form.nbAdulte = (form.nbAdulte || 0) + 1" class="w-12 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold border-l">+</button>
               </div>
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Enfants</label>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Enfants</label>
               <div class="flex items-center rounded-full border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden">
-                <button type="button" @click="form.nbEnfant = Math.max(0, (form.nbEnfant || 0) - 1)" class="w-12 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-r">-</button>
-                <input type="number" min="0" x-model.number="form.nbEnfant" :class="{'zero-clair': form.nbEnfant === 0}" class="w-full text-center py-2 text-sm outline-none font-bold text-slate-700 bg-transparent transition-colors">
-                <button type="button" @click="form.nbEnfant = (form.nbEnfant || 0) + 1" class="w-12 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-l">+</button>
+                <button type="button" @click="form.nbEnfant = Math.max(0, (form.nbEnfant || 0) - 1)" class="w-12 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold border-r">-</button>
+                <input type="number" min="0" x-model.number="form.nbEnfant" :class="{'zero-clair': form.nbEnfant === 0}" class="w-full text-center py-1.5 sm:py-2 text-sm outline-none font-bold text-slate-700 bg-transparent">
+                <button type="button" @click="form.nbEnfant = (form.nbEnfant || 0) + 1" class="w-12 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold border-l">+</button>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Téléphone</label>
-              <input type="tel" x-model="form.telephone" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Téléphone</label>
+              <input type="tel" x-model="form.telephone" class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Email</label>
-              <input type="email" x-model="form.email" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Email</label>
+              <input type="email" x-model="form.email" class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
             <div class="col-span-1 sm:col-span-3">
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Adresse</label>
-              <input type="text" x-model="form.adresse" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Code Postal</label>
-              <input type="text" x-model="form.codePostal" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Ville</label>
-              <input type="text" x-model="form.ville" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Pays</label>
-              <input type="text" x-model="form.pays" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Adresse</label>
+              <input type="text" x-model="form.adresse" class="w-full border border-slate-200 rounded-full px-4 py-1.5 sm:py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
           </div>
 
-          <div class="flex justify-center space-x-4 pt-6 border-t mt-4">
-            <button type="button" @click="showModalNew = false" class="px-8 py-2.5 border border-slate-300 rounded-full text-slate-700 font-bold hover:bg-slate-50 transition">Annuler</button>
-            <button type="submit" class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold shadow-md transition">Enregistrer</button>
+          <div class="flex justify-center space-x-4 pt-4 border-t mt-4">
+            <button type="button" @click="showModalNew = false" class="px-6 py-2 border border-slate-300 rounded-full text-slate-700 font-bold hover:bg-slate-50 text-sm">Annuler</button>
+            <button type="submit" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold shadow-md text-sm">Enregistrer</button>
           </div>
         </form>
       </div>
