@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gestion — Rocher Saint Pierre 1H</title>
-  
-  <!-- Tailwind CSS & Alpine.js & Lucide (Version Web CDN) -->
+  <!-- Ajout des favicons -->
+  <!-- Ajout des favicons (avec anti-cache pour Safari) -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=2">
+  <link rel="apple-touch-icon" href="favicon.png?v=2">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- FIREBASE (Version Web CDN) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -18,7 +21,6 @@
   <style>
     [x-cloak] { display: none !important; }
     
-    /* Masquer les flèches natives des inputs number */
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { 
       -webkit-appearance: none; 
@@ -35,7 +37,6 @@
       font-weight: 400 !important;
     }
     
-    /* Style pour les champs verrouillés (Lecture seule) */
     input:disabled, select:disabled {
       background-color: transparent;
       color: #64748b;
@@ -50,11 +51,11 @@
 
   <!-- ÉCRAN DE CONNEXION -->
   <div x-show="!isAuthenticated" class="min-h-screen flex items-center justify-center bg-slate-900" x-cloak>
-    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full">
+    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full mx-4">
       <div class="text-center mb-6">
         <img src="logo-menu-appli.png" alt="Logo" class="h-12 mx-auto mb-3 object-contain" onerror="this.style.display='none'">
         <h2 class="text-xl font-bold text-slate-800">Rocher Saint Pierre 1H</h2>
-        <p class="text-xs text-slate-500">Espace de gestion</p>
+        <p class="text-xs text-slate-500">Espace de gestion (Lecture)</p>
       </div>
       
       <form @submit.prevent="login()">
@@ -81,11 +82,8 @@
   <!-- CONTENEUR DE L'APPLICATION -->
   <div x-show="isAuthenticated" class="w-full" x-cloak>
 
-    <!-- En-tête global -->
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30 px-4 py-3">
       <div class="max-w-[1800px] mx-auto flex flex-col w-full gap-3">
-        
-        <!-- Ligne 1 : Titre et Déconnexion -->
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <img src="logo-menu-appli.png" alt="Logo" class="h-6 w-auto object-contain">
@@ -96,19 +94,14 @@
           </button>
         </div>
 
-        <!-- Ligne 2 : Année, Synchro et +Résa -->
         <div class="flex items-center justify-between">
-          
-          <!-- Année -->
           <div class="flex items-center space-x-1 bg-slate-800 p-1 rounded border border-slate-700">
             <button @click="changeGlobalYear(-1)" class="p-1 rounded hover:bg-slate-700 text-white transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
             <span class="w-12 font-extrabold text-center text-emerald-400 text-sm" x-text="currentYear"></span>
             <button @click="changeGlobalYear(1)" class="p-1 rounded hover:bg-slate-700 text-white transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
           </div>
           
-          <!-- Sync & Verif Booking -->
           <div class="flex items-center space-x-2">
-            <div x-show="lastBookingSync !== ''" class="text-[10px] text-blue-300 bg-slate-800 px-2 py-1 rounded border border-slate-700 whitespace-nowrap" x-text="'Booking: ' + lastBookingSync" x-cloak></div>
             <div class="bg-slate-800 p-1.5 rounded border border-slate-700 flex items-center justify-center" :title="syncStatus">
               <template x-if="syncStatus === 'synced'"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span></template>
               <template x-if="syncStatus === 'saving'"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span></template>
@@ -116,15 +109,12 @@
             </div>
           </div>
 
-          <!-- + Résa -->
           <button @click="openModalNewRes()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded flex items-center text-xs whitespace-nowrap shadow-sm">
             <i data-lucide="plus-circle" class="w-4 h-4 mr-1"></i> Résa
           </button>
         </div>
-
       </div>
 
-      <!-- Navigation Onglets (Grille sur 2 lignes pour mobile) -->
       <nav class="max-w-[1800px] mx-auto grid grid-cols-3 gap-1 border-t border-slate-800 pt-2 mt-2">
         <button @click="switchTab('calendrier')" :class="tab === 'calendrier' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="py-1.5 text-[11px] font-medium flex items-center justify-center rounded-t transition">
           <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1"></i> Calendrier
@@ -138,9 +128,6 @@
         <button @click="switchTab('tarifs')" :class="tab === 'tarifs' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="py-1.5 text-[11px] font-medium flex items-center justify-center rounded-t transition">
           <i data-lucide="tag" class="w-3.5 h-3.5 mr-1"></i> Tarifs
         </button>
-        <button @click="switchTab('donnees')" :class="tab === 'donnees' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="py-1.5 text-[11px] font-medium flex items-center justify-center rounded-t transition">
-          <i data-lucide="settings" class="w-3.5 h-3.5 mr-1"></i> Données
-        </button>
         <button @click="switchTab('comptabilite')" :class="tab === 'comptabilite' ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400 hover:text-white'" class="py-1.5 text-[11px] font-medium flex items-center justify-center rounded-t transition">
           <i data-lucide="calculator" class="w-3.5 h-3.5 mr-1"></i> Compta
         </button>
@@ -151,65 +138,51 @@
 
       <!-- ONGLET CALENDRIER -->
       <section x-show="tab === 'calendrier'" x-cloak>
-        <div class="bg-white rounded-xl shadow p-5 mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div>
+        <div class="bg-white rounded-xl shadow p-5 mb-6">
+          
+          <!-- En-tête et Légende intégrés -->
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
             <h2 class="text-xl font-bold text-slate-900">Calendrier des Disponibilités — <span class="text-emerald-600" x-text="currentYear"></span></h2>
+            
+            <div class="flex flex-wrap items-center gap-4 text-xs">
+              <div class="flex items-center space-x-1.5"><span class="w-3.5 h-3.5 rounded bg-emerald-400/40"></span><span class="text-slate-700 font-medium">Libre</span></div>
+              <div class="flex items-center space-x-1.5"><span class="w-3.5 h-3.5 rounded bg-blue-400/40"></span><span class="text-slate-700 font-medium">Perso</span></div>
+              <div class="flex items-center space-x-1.5"><span class="w-3.5 h-3.5 rounded bg-amber-400/40"></span><span class="text-slate-700 font-medium">Option</span></div>
+              <div class="flex items-center space-x-1.5"><span class="w-3.5 h-3.5 rounded bg-red-400/40"></span><span class="text-slate-700 font-medium">Confirmé</span></div>
+              <div class="flex items-center space-x-1.5"><span class="w-3.5 h-3.5 rounded bg-slate-200"></span><span class="text-slate-700 font-medium">Fermé</span></div>
+            </div>
           </div>
-        </div>
 
-        <div class="flex flex-wrap items-center gap-6 mb-6 px-2">
-          <div class="flex items-center space-x-2">
-            <span class="w-4 h-4 rounded bg-emerald-400/40 border border-emerald-500/20"></span>
-            <span class="text-sm text-slate-700 font-medium">Libre</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="w-4 h-4 rounded bg-blue-400/40 border border-blue-500/20"></span>
-            <span class="text-sm text-slate-700 font-medium">Perso</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="w-4 h-4 rounded bg-amber-400/40 border border-amber-500/20"></span>
-            <span class="text-sm text-slate-700 font-medium">Option</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="w-4 h-4 rounded bg-red-400/40 border border-red-500/20"></span>
-            <span class="text-sm text-slate-700 font-medium">Confirmé</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="w-4 h-4 rounded bg-slate-200 border border-slate-300"></span>
-            <span class="text-sm text-slate-700 font-medium">Fermé</span>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <template x-for="(month, mIdx) in calendarMonths" :key="mIdx">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <div class="bg-slate-800 text-white font-bold text-center py-1.5 text-sm capitalize" x-text="month.name"></div>
-              <div class="p-2">
-                <div class="grid grid-cols-7 text-center font-bold text-[10px] text-slate-400 mb-1">
-                  <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
-                </div>
-                <div class="grid grid-cols-7 gap-1">
-                  <template x-for="blank in month.padding">
-                    <div class="h-7"></div>
-                  </template>
-                  <template x-for="day in month.days" :key="day.dateStr">
-                    <button 
-                      @click="(!day.isClosed && (day.resAprem || day.resMatin)) ? openClientCard(day.resAprem || day.resMatin) : null"
-                      :class="{
-                        'text-slate-400 cursor-not-allowed border-slate-300': day.isClosed,
-                        'text-emerald-900 cursor-default border-emerald-500/10': !day.isClosed && !day.resMatin && !day.resAprem,
-                        'text-slate-900 font-bold cursor-pointer shadow-sm border-slate-300 hover:opacity-75': !day.isClosed && (day.resMatin || day.resAprem)
-                      }"
-                      class="h-7 w-full rounded flex items-center justify-center text-xs transition border"
-                      :style="`background: linear-gradient(to bottom right, ${getColorForRes(day.resMatin, day.isClosed)} 50%, ${getColorForRes(day.resAprem, day.isClosed)} 50%);`"
-                      :title="getDayTooltip(day)">
-                      <span x-text="day.dayNum"></span>
-                    </button>
-                  </template>
+          <!-- Grille des mois -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <template x-for="(month, mIdx) in calendarMonths" :key="mIdx">
+              <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-800 text-white font-bold text-center py-1.5 text-sm capitalize" x-text="month.name"></div>
+                <div class="p-2">
+                  <div class="grid grid-cols-7 text-center font-bold text-[10px] text-slate-400 mb-1">
+                    <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                  </div>
+                  <div class="grid grid-cols-7 gap-1">
+                    <template x-for="blank in month.padding"><div class="h-7"></div></template>
+                    <template x-for="day in month.days" :key="day.dateStr">
+                      <button 
+                        @click="(!day.isClosed && (day.resAprem || day.resMatin)) ? openClientCard(day.resAprem || day.resMatin) : null"
+                        :class="{
+                          'text-slate-400 cursor-not-allowed border-slate-300': day.isClosed,
+                          'text-emerald-900 cursor-default border-emerald-500/10': !day.isClosed && !day.resMatin && !day.resAprem,
+                          'text-slate-900 font-bold cursor-pointer shadow-sm border-slate-300 hover:opacity-75': !day.isClosed && (day.resMatin || day.resAprem)
+                        }"
+                        class="h-7 w-full rounded flex items-center justify-center text-xs transition border"
+                        :style="`background: linear-gradient(to bottom right, ${getColorForRes(day.resMatin, day.isClosed)} 50%, ${getColorForRes(day.resAprem, day.isClosed)} 50%);`"
+                        :title="getDayTooltip(day)">
+                        <span x-text="day.dayNum"></span>
+                      </button>
+                    </template>
+                  </div>
                 </div>
               </div>
-            </div>
-          </template>
+            </template>
+          </div>
         </div>
       </section>
 
@@ -239,7 +212,7 @@
                   <th class="px-1.5 py-2 align-middle leading-tight">Taxe<br>Séj.</th>
                   <th class="px-1.5 py-2 align-middle font-extrabold text-emerald-400 leading-tight">Total<br>Séjour</th>
                   <th class="px-1.5 py-2 align-middle">Annul.</th>
-                  <th class="px-1.5 py-2 align-middle text-center">Actions</th>
+                  <th class="px-1.5 py-2 align-middle text-center">Fiche</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white">
@@ -258,19 +231,20 @@
                       <span :class="getReservationStatus(res) === 'confirme' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'" class="px-1.5 py-0.5 rounded-full text-[10px] font-bold capitalize" x-text="getReservationStatus(res)"></span>
                     </td>
                     <td class="px-1.5 py-1.5">
-                      <select x-model="res.codeTarif" @change="updateReservationTarif(res)" class="border rounded px-1 py-0.5 text-[10px] font-bold uppercase bg-white focus:ring-2 focus:ring-emerald-500 outline-none w-20 text-center mx-auto block">
-                        <option value="public">Public</option>
-                        <option value="booking">Booking</option>
-                        <option value="libre">Libre</option>
-                        <option value="perso">Perso</option>
-                        <option value="black">Black</option>
-                      </select>
+                      <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase inline-block text-center shadow-sm"
+      :class="{
+        'bg-slate-100 text-slate-700': res.codeTarif === 'public' || !res.codeTarif,
+        'bg-blue-100 text-blue-800': res.codeTarif === 'booking',
+        'bg-emerald-100 text-emerald-800': res.codeTarif === 'libre',
+        'bg-purple-100 text-purple-800': res.codeTarif === 'perso',
+        'bg-gray-800 text-white': res.codeTarif === 'black'
+      }"
+      x-text="res.codeTarif || 'public'"></span>
                     </td>
                     <td class="px-1.5 py-1.5">
-                      <select x-model="res.forceMenageNon" @change="saveAll()" :class="res.forceMenageNon === 'oui' ? 'bg-rose-100 text-rose-800' : 'bg-transparent text-slate-700'" class="border rounded px-1 py-0.5 text-[10px] font-bold uppercase outline-none text-center mx-auto block">
-                        <option value="non">Non</option>
-                        <option value="oui">Oui(0€)</option>
-                      </select>
+                      <span class="px-1 py-0.5 rounded text-[10px] font-bold uppercase block text-center"
+                            :class="res.forceMenageNon === 'oui' ? 'bg-rose-100 text-rose-800' : 'bg-transparent text-slate-700'"
+                            x-text="res.forceMenageNon === 'oui' ? 'Oui(0€)' : 'Non'"></span>
                     </td>
                     <td class="px-1.5 py-1.5 text-slate-700 font-medium" x-text="formatCurrency(res.prixTotal)"></td>
                     <td class="px-1.5 py-1.5 text-slate-600" x-text="formatCurrency(calcMenage(res))"></td>
@@ -283,10 +257,8 @@
                            :title="isRefundable(res.dateDebut) ? 'Annulation gratuite possible (+ de 30 jours restants)' : 'Délai dépassé (- de 30 jours restants)'"></div>
                     </td>
 
-                    <td class="px-1.5 py-1.5 text-center space-x-0.5">
-                      <button @click="openClientCard(res)" class="text-slate-500 hover:text-emerald-600 p-1" title="Voir la fiche client"><i data-lucide="eye" class="w-3.5 h-3.5"></i></button>
-                      <button @click="openModalEditRes(res)" class="text-slate-500 hover:text-amber-600 p-1" title="Modifier la réservation"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                      <button @click="deleteReservation(res.id)" class="text-slate-400 hover:text-rose-600 p-1" title="Supprimer la réservation"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    <td class="px-1.5 py-1.5 text-center">
+                      <button @click="openClientCard(res)" class="text-slate-500 hover:text-emerald-600 p-1 block mx-auto" title="Voir la fiche client"><i data-lucide="eye" class="w-4 h-4"></i></button>
                     </td>
                   </tr>
                 </template>
@@ -324,7 +296,6 @@
                 <template x-for="(res, index) in filteredPaiementsByYear" :key="res.id">
                   <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-slate-50'" class="hover:bg-slate-100 transition text-center align-middle">
                     <td class="p-2 font-semibold text-slate-900 whitespace-nowrap text-left" x-text="res.nom + ' ' + (res.prenom || '')"></td>
-                    
                     <td class="p-2 whitespace-nowrap">
                       <span class="px-2 py-0.5 rounded-full text-[10px] font-bold capitalize inline-block"
                             :class="{
@@ -336,29 +307,14 @@
                             }"
                             x-text="res.codeTarif || 'public'"></span>
                     </td>
-
                     <td class="p-2 font-bold text-emerald-600 whitespace-nowrap" x-text="formatCurrency(calcTotalSejour(res))"></td>
-                    
                     <td class="p-2 text-blue-900 font-semibold whitespace-nowrap bg-blue-50/10" x-text="formatCurrency(calcAcompte(res))"></td>
-                    
-                    <td class="p-2 whitespace-nowrap bg-blue-50/10 text-center">
-                      <span class="font-bold text-blue-900" x-text="formatCurrency(res.acompte)"></span>
-                    </td>
-                    
-                    <td class="p-2 whitespace-nowrap bg-amber-50/10 text-center">
-                      <span class="font-bold text-amber-900" x-text="formatCurrency(res.soldePaye)"></span>
-                    </td>
-                    
-                    <td class="p-2 whitespace-nowrap">
-                      <span class="font-bold uppercase text-[11px]" :class="res.cautionRecue === 'oui' ? 'text-emerald-600' : 'text-slate-400'" x-text="res.cautionRecue || 'non'"></span>
-                    </td>
-                    <td class="p-2 whitespace-nowrap">
-                      <span class="font-bold uppercase text-[11px]" :class="res.cautionRendue === 'oui' ? 'text-emerald-600' : 'text-slate-400'" x-text="res.cautionRendue || 'non'"></span>
-                    </td>
+                    <td class="p-2 whitespace-nowrap bg-blue-50/10 text-center"><span class="font-bold text-blue-900" x-text="formatCurrency(res.acompte)"></span></td>
+                    <td class="p-2 whitespace-nowrap bg-amber-50/10 text-center"><span class="font-bold text-amber-900" x-text="formatCurrency(res.soldePaye)"></span></td>
+                    <td class="p-2 whitespace-nowrap"><span class="font-bold uppercase text-[11px]" :class="res.cautionRecue === 'oui' ? 'text-emerald-600' : 'text-slate-400'" x-text="res.cautionRecue || 'non'"></span></td>
+                    <td class="p-2 whitespace-nowrap"><span class="font-bold uppercase text-[11px]" :class="res.cautionRendue === 'oui' ? 'text-emerald-600' : 'text-slate-400'" x-text="res.cautionRendue || 'non'"></span></td>
                     <td class="p-2 font-extrabold whitespace-nowrap" :class="calcResteAPayer(res) <= 0 ? 'text-emerald-600' : 'text-rose-600'" x-text="formatCurrency(calcResteAPayer(res))"></td>
-                    <td class="p-2 whitespace-nowrap">
-                      <span :class="getReservationStatus(res) === 'confirme' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'" class="px-2 py-0.5 rounded-full text-[10px] font-bold capitalize inline-block" x-text="getReservationStatus(res)"></span>
-                    </td>
+                    <td class="p-2 whitespace-nowrap"><span :class="getReservationStatus(res) === 'confirme' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'" class="px-2 py-0.5 rounded-full text-[10px] font-bold capitalize inline-block" x-text="getReservationStatus(res)"></span></td>
                   </tr>
                 </template>
                 <tr x-show="filteredPaiementsByYear.length === 0">
@@ -378,42 +334,48 @@
           </div>
 
           <div class="overflow-x-auto overflow-y-auto max-h-[600px] rounded-xl border border-slate-200 shadow-sm">
-            <!-- Police globale du tableau réduite à 9px -->
             <table class="w-full text-left border-collapse text-[9px] whitespace-nowrap">
-              <!-- En-tête réduit à 8px avec padding minimal -->
               <thead class="sticky top-0 bg-slate-800 text-white uppercase text-[8px]">
                 <tr>
                   <th class="p-1 text-center leading-tight">Période</th>
+                  <th class="p-1 text-center leading-tight">Code Tarif</th>
                   <th class="p-1 text-center leading-tight">Dates</th>
                   <th class="p-1 text-center leading-tight">Public</th>
                   <th class="p-1 text-center leading-tight">Booking</th>
                   <th class="p-1 text-center leading-tight">Libre</th>
-                  <th class="p-1 text-center bg-orange-500 text-white leading-tight">Correction</th>
+                  <th class="p-1 text-center bg-orange-500 text-white leading-tight">Prix Final</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white">
                 <template x-for="(w, index) in filteredGridTarifs" :key="w.key">
                   <tr :class="(w.isCustom || getReservationForTarif(w)) ? 'bg-sky-50 text-slate-900 font-bold' : (index % 2 === 0 ? 'bg-white' : 'bg-slate-50')" class="hover:bg-slate-100 transition text-center align-middle">
                     
-                    <!-- Période en 8px, largeur max réduite à 55px -->
                     <td class="p-1 text-center truncate max-w-[55px] mx-auto text-[8px]" 
                         x-text="getReservationForTarif(w) ? ((getReservationForTarif(w).prenom ? getReservationForTarif(w).prenom.charAt(0).toUpperCase() + '. ' : '') + getReservationForTarif(w).nom) : w.label.replace('Semaine ', 'Sem. ')">
                     </td>
+
+                    <td class="p-1 text-center align-middle">
+  <span x-show="getReservationForTarif(w)"
+        class="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase inline-block shadow-sm min-w-[50px]"
+        :class="{
+          'bg-slate-100 text-slate-700': getReservationForTarif(w) && (!getReservationForTarif(w).codeTarif || getReservationForTarif(w).codeTarif === 'public'),
+          'bg-blue-100 text-blue-800': getReservationForTarif(w) && getReservationForTarif(w).codeTarif === 'booking',
+          'bg-emerald-100 text-emerald-800': getReservationForTarif(w) && getReservationForTarif(w).codeTarif === 'libre',
+          'bg-purple-100 text-purple-800': getReservationForTarif(w) && getReservationForTarif(w).codeTarif === 'perso',
+          'bg-gray-800 text-white': getReservationForTarif(w) && getReservationForTarif(w).codeTarif === 'black'
+        }"
+        x-text="getReservationForTarif(w) ? (getReservationForTarif(w).codeTarif || 'public') : ''">
+  </span>
+</td>
                     
-                    <!-- Dates en 8px -->
                     <td class="p-1 text-center font-bold text-[8px] text-slate-600" x-text="formatDate(w.startISO) + ' - ' + formatDate(w.endISO)"></td>
                     
-                    <td class="p-1 text-center">
-                      <span class="font-bold text-slate-700" x-text="formatCurrency(w.public)"></span>
-                    </td>
+                    <td class="p-1 text-center"><span class="font-bold text-slate-700" x-text="formatCurrency(w.public)"></span></td>
                     <td class="p-1 text-center font-bold text-blue-600" x-text="formatCurrency(w.booking)"></td>
-                    <td class="p-1 text-center">
-                      <span class="font-bold text-purple-700" x-text="formatCurrency(w.libre)"></span>
-                    </td>
+                    <td class="p-1 text-center"><span class="font-bold text-purple-700" x-text="formatCurrency(w.libre)"></span></td>
                     
-                    <!-- Champ correction réduit à w-12 et texte en 9px -->
                     <td class="p-1 text-center bg-orange-50/50">
-                      <input type="text" inputmode="decimal" x-model="w.correction" @input="w.correction = String(w.correction).replace(',', '.'); onTarifChange()" :class="{'zero-clair': Number(w.correction) === 0}" class="w-12 mx-auto text-center border rounded px-0.5 py-0.5 font-bold text-orange-900 focus:ring-2 focus:ring-orange-500 outline-none transition-colors bg-white shadow-sm text-[9px]">
+                      <span class="font-bold text-orange-900 text-[10px]" x-text="formatCurrency(w.correction)"></span>
                     </td>
                   </tr>
                 </template>
@@ -423,34 +385,13 @@
         </div>
       </section>
 
-      <!-- ONGLET DONNÉES -->
-      <section x-show="tab === 'donnees'" x-cloak>
-        <div class="flex justify-center mt-6">
-          <div class="bg-slate-900 text-white rounded-xl p-6 shadow-md border border-blue-900 w-full sm:w-auto">
-            <h2 class="text-lg font-bold text-blue-400 mb-4 pb-2 border-b border-slate-700 text-center">Synchronisation Booking.com</h2>
-            
-            <div class="hidden">
-              <input type="text" x-model="donnees.urlBookingIcal" @input="saveAll()">
-            </div>
-
-            <button @click="syncBookingICal(true)" type="button" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg text-sm shadow-sm flex items-center justify-center transition w-full">
-              <i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i> Synchroniser depuis Booking
-            </button>
-          </div>
-        </div>
-      </section>
-      
       <!-- ONGLET COMPTABILITÉ -->
       <section x-show="tab === 'comptabilite'" x-cloak>
         <div class="bg-white rounded-xl shadow p-6 mb-6">
           <h2 class="text-xl font-bold text-slate-900 mb-6">Comptabilité & Bilan Financier — <span class="text-emerald-600" x-text="currentYear"></span></h2>
-          
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            
-            <!-- 1. Synthèse et gain -->
             <div class="border rounded-xl p-4 bg-slate-50 border-slate-200 shadow-sm flex flex-col text-xs">
               <h3 class="font-extrabold text-slate-900 text-sm border-b pb-2 text-sky-800 uppercase tracking-wide mb-3">Synthèse Gains & Taxe de séjour</h3>
-              
               <div class="bg-rose-50/60 p-2.5 rounded border border-rose-200 space-y-2 shadow-sm">
                 <div class="flex justify-between items-center">
                   <span class="font-bold text-[11px] text-rose-900">TOTAL GAIN (Brut) :</span>
@@ -461,104 +402,64 @@
                   <span class="font-extrabold text-rose-700 text-xs" x-text="formatCurrency(comptaMetrics.totalOfficiel)"></span>
                 </div>
               </div>
-
               <div class="p-2.5 rounded border space-y-2 shadow-sm my-3 bg-cyan-50 border-cyan-200">
-                <div class="flex justify-between items-center">
-                  <span class="font-bold text-cyan-800 text-[11px]">Paiements reçus :</span>
-                  <span class="font-extrabold text-xs text-cyan-900" x-text="formatCurrency(comptaMetrics.paiementsRecus)"></span>
-                </div>
-                <div class="flex justify-between items-center pt-1.5 border-t border-cyan-200">
-                  <span class="font-bold text-cyan-800 text-[11px]">Paiements à recevoir :</span>
-                  <span class="font-extrabold text-xs text-cyan-900" x-text="formatCurrency(comptaMetrics.paiementsARecevoir)"></span>
-                </div>
+                <div class="flex justify-between items-center"><span class="font-bold text-cyan-800 text-[11px]">Paiements reçus :</span><span class="font-extrabold text-xs text-cyan-900" x-text="formatCurrency(comptaMetrics.paiementsRecus)"></span></div>
+                <div class="flex justify-between items-center pt-1.5 border-t border-cyan-200"><span class="font-bold text-cyan-800 text-[11px]">Paiements à recevoir :</span><span class="font-extrabold text-xs text-cyan-900" x-text="formatCurrency(comptaMetrics.paiementsARecevoir)"></span></div>
               </div>
+             <div class="bg-amber-50/60 p-2.5 rounded border border-amber-200 space-y-2 shadow-sm">
+  <div class="flex justify-between items-center font-bold text-slate-800">
+    <span class="text-[11px]">Taxe de séjour calculée :</span>
+    <span class="text-amber-900 text-xs" x-text="formatCurrency(comptaMetrics.taxeCalculer)"></span>
+  </div>
+  
+  <div class="flex justify-between items-center">
+    <label class="text-[10px] font-semibold text-slate-600">Taxe de séjour payée (€) :</label>
+    <span class="font-bold text-slate-800 text-xs" x-text="formatCurrency((Number(getComptaYearData(currentYear).taxePayee)||0) + (Number(getComptaYearData(currentYear).taxePayeeT1)||0) + (Number(getComptaYearData(currentYear).taxePayeeT2)||0) + (Number(getComptaYearData(currentYear).taxePayeeT3)||0) + (Number(getComptaYearData(currentYear).taxePayeeT4)||0))"></span>
+  </div>
+  
+  <div class="flex justify-between items-center">
+    <label class="text-[10px] font-semibold text-slate-600">Taxe de séjour à retirer (€) :</label>
+    <span class="font-bold text-slate-800 text-xs" x-text="formatCurrency(getComptaYearData(currentYear).taxeARetirer)"></span>
+  </div>
 
-              <div class="bg-amber-50/60 p-2.5 rounded border border-amber-200 space-y-2 shadow-sm">
-                <div class="flex justify-between items-center font-bold text-slate-800">
-                  <span class="text-[11px]">Taxe de séjour calculée :</span>
-                  <span class="text-amber-900 text-xs" x-text="formatCurrency(comptaMetrics.taxeCalculer)"></span>
-                </div>
-                
-                <div class="flex justify-between items-center">
-                  <label class="text-[10px] font-semibold text-slate-600">Taxe de séjour payée (€) :</label>
-                  <span class="font-bold text-slate-800 text-xs" x-text="formatCurrency(getComptaYearData(currentYear).taxePayee)"></span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <label class="text-[10px] font-semibold text-slate-600">Taxe de séjour à retirer (€) :</label>
-                  <span class="font-bold text-slate-800 text-xs" x-text="formatCurrency(getComptaYearData(currentYear).taxeARetirer)"></span>
-                </div>
-
-                <div class="flex justify-between items-center font-extrabold text-[11px] pt-1.5 border-t border-amber-300">
-                  <span class="text-slate-800">Taxe restant à payer :</span>
-                  <span class="text-xs" :class="comptaTaxeRestante <= 0 ? 'text-emerald-700' : 'text-rose-700'" x-text="formatCurrency(comptaTaxeRestante)"></span>
-                </div>
-              </div>
-            </div>
+  <div class="flex justify-between items-center font-extrabold text-[11px] pt-1.5 border-t border-amber-300">
+    <span class="text-slate-800">Taxe restant à payer :</span>
+    <span class="text-xs" :class="comptaTaxeRestante <= 0 ? 'text-emerald-700' : 'text-rose-700'" x-text="formatCurrency(comptaTaxeRestante)"></span>
+  </div>
+</div>
 
             <div class="flex flex-col gap-4">
-              
-              <!-- 2. Récapitulatif Général -->
               <div class="border rounded-xl p-4 bg-slate-900 text-white shadow-md space-y-3">
                 <h3 class="font-extrabold text-emerald-400 text-xs border-b border-slate-700 pb-2 uppercase tracking-wide">Récapitulatif Général</h3>
                 <div class="grid grid-cols-1 gap-2 text-[11px] mt-2">
                   <div class="space-y-1.5 bg-slate-800 p-2.5 rounded-lg border border-slate-700">
-                    <div class="flex justify-between items-center pb-1 border-b border-slate-700">
-                      <span class="font-semibold text-slate-300">Taxe de Séjour :</span>
-                      <span class="font-bold text-amber-300" x-text="formatCurrency(comptaMetrics.taxeCalculer)"></span>
-                    </div>
-                    <div class="flex justify-between items-center pb-1 border-b border-slate-700">
-                      <span class="font-semibold text-slate-300">Coût Conciergerie :</span>
-                      <span class="font-bold text-emerald-300" x-text="formatCurrency(comptaMetrics.coutTotalConciergerie)"></span>
-                    </div>
-                    <div class="flex justify-between items-center pb-1 border-b border-slate-700">
-                      <span class="font-semibold text-slate-300">Total Copro, Énergie, Taxes :</span>
-                      <span class="font-bold text-orange-300" x-text="formatCurrency(comptaTotalRambaud + comptaTotalSorea + comptaTotalTaxesDirectes)"></span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="font-semibold text-slate-300">Impôts & Assurances :</span>
-                      <span class="font-bold text-rose-300" x-text="formatCurrency(comptaCalculImpots.totalImpots + (Number(getComptaYearData(currentYear).assuranceAppart)||0) + (Number(getComptaYearData(currentYear).assuranceCredit)||0))"></span>
-                    </div>
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300">Taxe de Séjour :</span><span class="font-bold text-amber-300" x-text="formatCurrency(comptaMetrics.taxeCalculer)"></span></div>
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300">Coût Conciergerie :</span><span class="font-bold text-emerald-300" x-text="formatCurrency(comptaMetrics.coutTotalConciergerie)"></span></div>
+                    <div class="flex justify-between items-center pb-1 border-b border-slate-700"><span class="font-semibold text-slate-300">Total Copro, Énergie, Taxes :</span><span class="font-bold text-orange-300" x-text="formatCurrency(comptaTotalRambaud + comptaTotalSorea + comptaTotalTaxesDirectes)"></span></div>
+                    <div class="flex justify-between items-center"><span class="font-semibold text-slate-300">Impôts & Assurances :</span><span class="font-bold text-rose-300" x-text="formatCurrency(comptaCalculImpots.totalImpots + (Number(getComptaYearData(currentYear).assuranceAppart)||0) + (Number(getComptaYearData(currentYear).assuranceCredit)||0))"></span></div>
                   </div>
                 </div>
-
                 <div class="mt-2 grid grid-cols-1 gap-2">
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-rose-500/30 flex justify-between items-center">
-                    <span class="text-[10px] font-extrabold uppercase text-slate-300">Charges Annuelles :</span>
-                    <span class="text-xs font-bold text-rose-400" x-text="formatCurrency(comptaTotalGeneralCharges)"></span>
-                  </div>
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-emerald-500/30 flex justify-between items-center">
-                    <span class="text-[10px] font-extrabold uppercase text-slate-300">Gain (Brut) :</span>
-                    <span class="text-xs font-bold text-emerald-400" x-text="formatCurrency(comptaMetrics.totalGainBrut)"></span>
-                  </div>
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-sky-500/30 flex justify-between items-center">
-                    <span class="text-[10px] font-extrabold uppercase text-slate-300">Restant (Gain - Charges) :</span>
-                    <span class="text-xs font-bold" :class="comptaRestantTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'" x-text="formatCurrency(comptaRestantTotal)"></span>
-                  </div>
+                  <div class="bg-slate-800 p-2.5 rounded-lg border border-rose-500/30 flex justify-between items-center"><span class="text-[10px] font-extrabold uppercase text-slate-300">Charges Annuelles :</span><span class="text-xs font-bold text-rose-400" x-text="formatCurrency(comptaTotalGeneralCharges)"></span></div>
+                  <div class="bg-slate-800 p-2.5 rounded-lg border border-emerald-500/30 flex justify-between items-center"><span class="text-[10px] font-extrabold uppercase text-slate-300">Gain (Brut) :</span><span class="text-xs font-bold text-emerald-400" x-text="formatCurrency(comptaMetrics.totalGainBrut)"></span></div>
+                  <div class="bg-slate-800 p-2.5 rounded-lg border border-sky-500/30 flex justify-between items-center"><span class="text-[10px] font-extrabold uppercase text-slate-300">Restant (Gain - Charges) :</span><span class="text-xs font-bold" :class="comptaRestantTotal >= 0 ? 'text-emerald-400' : 'text-rose-400'" x-text="formatCurrency(comptaRestantTotal)"></span></div>
                 </div>
               </div>
 
-              <!-- 3. Bilan et Financement -->
               <div class="border rounded-xl p-4 bg-slate-900 text-white shadow-md space-y-3">
                 <h3 class="font-extrabold text-sky-400 text-xs border-b border-slate-700 pb-2 uppercase tracking-wide">Bilan & Financement Crédit</h3>
-                
                 <div class="grid grid-cols-2 gap-2 mt-2">
                   <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center">
-                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Coût Crédit Annuel</span>
-                    <span class="text-sm font-bold text-slate-100" x-text="formatCurrency(comptaCreditAnnuel)"></span>
-                  </div>
-
-                  <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center">
-                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Restant à Financer</span>
-                    <span class="text-sm font-bold" :class="comptaCreditReste > 0 ? 'text-rose-400' : 'text-emerald-400'" x-text="formatCurrency(comptaCreditReste)"></span>
-                  </div>
-
-                  <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center col-span-2 shadow-[0_0_15px_rgba(14,165,233,0.15)]">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-sky-300 mb-1">Effort / Personne / Mois</span>
-                    <span class="text-base font-bold" :class="comptaCreditRestePersMois > 0 ? 'text-rose-400' : 'text-emerald-400'" x-text="formatCurrency(comptaCreditRestePersMois)"></span>
-                  </div>
+  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Coût Crédit Annuel</span>
+  <span class="text-sm font-bold text-slate-100" x-text="formatCurrency(comptaCreditAnnuel)"></span>
+  
+  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-3 mb-1">Soit par pers. / mois</span>
+  <span class="text-sm font-bold text-slate-100" x-text="formatCurrency(comptaCreditAnnuel / 24)"></span>
+</div>
+                  <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center"><span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Restant à Financer</span><span class="text-sm font-bold" :class="comptaCreditReste > 0 ? 'text-rose-400' : 'text-emerald-400'" x-text="formatCurrency(comptaCreditReste)"></span></div>
+                  <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex flex-col items-center justify-center text-center col-span-2 shadow-[0_0_15px_rgba(14,165,233,0.15)]"><span class="text-[10px] font-bold uppercase tracking-wider text-sky-300 mb-1">Effort / Personne / Mois</span><span class="text-base font-bold" :class="comptaCreditRestePersMois > 0 ? 'text-rose-400' : 'text-emerald-400'" x-text="formatCurrency(comptaCreditRestePersMois)"></span></div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -568,13 +469,14 @@
     
     <!-- MODAL NOUVELLE RÉSERVATION -->
     <div x-show="showModalNew" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" x-cloak>
-      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 relative">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 relative">
         <button @click="showModalNew = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
-        <h3 class="text-xl font-bold text-slate-900 mb-4 border-b pb-2">Créer une Réservation</h3>
         
-        <div class="mb-5 bg-sky-50 p-3 rounded-lg border border-sky-100" x-show="knownClients.length > 0">
-          <label class="block text-xs font-bold text-sky-800 uppercase mb-1">Remplissage rapide (Ancien client)</label>
-          <select @change="loadClientIntoForm($event.target.value)" class="w-full border-sky-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 outline-none bg-white">
+        <h3 class="text-xl font-bold text-slate-900 mb-6 pb-2 text-center">Créer une Réservation</h3>
+        
+        <div class="mb-6 bg-amber-50/50 p-4 rounded-2xl border border-amber-100" x-show="knownClients.length > 0">
+          <label class="block text-[11px] font-bold text-amber-800 uppercase mb-2 text-center">Remplissage rapide (Ancien client)</label>
+          <select @change="loadClientIntoForm($event.target.value)" class="w-full border-amber-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none bg-white text-center text-slate-700">
             <option value="">-- Sélectionner un client déjà venu --</option>
             <template x-for="client in knownClients" :key="client.id">
               <option :value="client.id" x-text="client.nom + ' ' + (client.prenom || '') + ' (' + (client.email || 'Pas d\'email') + ')'"></option>
@@ -582,16 +484,22 @@
           </select>
         </div>
 
-        <form @submit.prevent="submitReservation()" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nom *</label><input type="text" x-model="form.nom" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Prénom *</label><input type="text" x-model="form.prenom" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"></div>
+        <form @submit.prevent="submitReservation()" class="space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Nom *</label>
+              <input type="text" x-model="form.nom" required class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Prénom *</label>
+              <input type="text" x-model="form.prenom" required class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+            </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Origine réservation</label>
-              <select x-model="form.origine" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Origine réservation</label>
+              <select x-model="form.origine" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
                 <option value="booking">Booking</option>
                 <option value="valloire résa">Valloire Résa</option>
                 <option value="perso">Perso</option>
@@ -599,185 +507,81 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kit Bébé</label>
-              <select x-model="form.kitBebe" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Kit Bébé</label>
+              <select x-model="form.kitBebe" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
                 <option value="non">Non</option>
                 <option value="oui">Oui</option>
               </select>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 p-4 rounded-2xl border border-slate-100">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date d'arrivée *</label>
-              <input type="date" x-model="form.dateDebut" @change="onStartDateChange()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Date d'arrivée *</label>
+              <input type="date" x-model="form.dateDebut" @change="onStartDateChange()" required class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center text-slate-600">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date de départ *</label>
-              <input type="date" x-model="form.dateFin" :min="form.dateDebut" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Date de départ *</label>
+              <input type="date" x-model="form.dateFin" :min="form.dateDebut" required class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center text-slate-600">
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Adultes</label>
-              <div class="flex items-center rounded-lg border bg-white focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden">
-                <button type="button" @click="form.nbAdulte = Math.max(1, (form.nbAdulte || 1) - 1)" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-r">-</button>
-                <input type="number" min="1" x-model.number="form.nbAdulte" class="w-full text-center py-2 text-sm outline-none font-bold text-slate-700">
-                <button type="button" @click="form.nbAdulte = (form.nbAdulte || 0) + 1" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-l">+</button>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Adultes</label>
+              <div class="flex items-center rounded-full border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden">
+                <button type="button" @click="form.nbAdulte = Math.max(1, (form.nbAdulte || 1) - 1)" class="w-12 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-r">-</button>
+                <input type="number" min="1" x-model.number="form.nbAdulte" class="w-full text-center py-2 text-sm outline-none font-bold text-slate-700 bg-transparent">
+                <button type="button" @click="form.nbAdulte = (form.nbAdulte || 0) + 1" class="w-12 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-l">+</button>
               </div>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Enfants</label>
-              <div class="flex items-center rounded-lg border bg-white focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden">
-                <button type="button" @click="form.nbEnfant = Math.max(0, (form.nbEnfant || 0) - 1)" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-r">-</button>
-                <input type="number" min="0" x-model.number="form.nbEnfant" :class="{'zero-clair': form.nbEnfant === 0}" class="w-full text-center py-2 text-sm outline-none font-bold text-slate-700 transition-colors">
-                <button type="button" @click="form.nbEnfant = (form.nbEnfant || 0) + 1" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-l">+</button>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Enfants</label>
+              <div class="flex items-center rounded-full border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden">
+                <button type="button" @click="form.nbEnfant = Math.max(0, (form.nbEnfant || 0) - 1)" class="w-12 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-r">-</button>
+                <input type="number" min="0" x-model.number="form.nbEnfant" :class="{'zero-clair': form.nbEnfant === 0}" class="w-full text-center py-2 text-sm outline-none font-bold text-slate-700 bg-transparent transition-colors">
+                <button type="button" @click="form.nbEnfant = (form.nbEnfant || 0) + 1" class="w-12 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-l">+</button>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Téléphone</label>
-              <input type="tel" x-model="form.telephone" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Téléphone</label>
+              <input type="tel" x-model="form.telephone" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email</label>
-              <input type="email" x-model="form.email" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Email</label>
+              <input type="email" x-model="form.email" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-4">
-            <div class="col-span-3">
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Adresse</label>
-              <input type="text" x-model="form.adresse" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div class="col-span-1 sm:col-span-3">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Adresse</label>
+              <input type="text" x-model="form.adresse" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Code Postal</label>
-              <input type="text" x-model="form.codePostal" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Code Postal</label>
+              <input type="text" x-model="form.codePostal" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ville</label>
-              <input type="text" x-model="form.ville" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Ville</label>
+              <input type="text" x-model="form.ville" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pays</label>
-              <input type="text" x-model="form.pays" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 text-center">Pays</label>
+              <input type="text" x-model="form.pays" class="w-full border border-slate-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-center">
             </div>
           </div>
 
-          <div class="flex justify-end space-x-3 pt-4 border-t">
-            <button type="button" @click="showModalNew = false" class="px-4 py-2 border rounded-lg text-slate-600 font-medium hover:bg-slate-50">Annuler</button>
-            <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold shadow">Enregistrer</button>
+          <div class="flex justify-center space-x-4 pt-6 border-t mt-4">
+            <button type="button" @click="showModalNew = false" class="px-8 py-2.5 border border-slate-300 rounded-full text-slate-700 font-bold hover:bg-slate-50 transition">Annuler</button>
+            <button type="submit" class="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold shadow-md transition">Enregistrer</button>
           </div>
         </form>
       </div>
     </div>
-
-    <!-- MODAL MODIFIER RÉSERVATION -->
-    <div x-show="showModalEdit" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" x-cloak>
-      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 relative">
-        <button @click="showModalEdit = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-6 h-6"></i></button>
-        <h3 class="text-xl font-bold text-slate-900 mb-4 border-b pb-2">Modifier la Réservation</h3>
-
-        <form @submit.prevent="submitEditReservation()" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Nom *</label>
-              <input type="text" x-model="editForm.nom" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Prénom *</label>
-              <input type="text" x-model="editForm.prenom" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Origine réservation</label>
-              <select x-model="editForm.origine" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                <option value="booking">Booking</option>
-                <option value="valloire résa">Valloire Résa</option>
-                <option value="perso">Perso</option>
-                <option value="retour">Retour</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kit Bébé</label>
-              <select x-model="editForm.kitBebe" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                <option value="non">Non</option>
-                <option value="oui">Oui</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date d'arrivée *</label>
-              <input type="date" x-model="editForm.dateDebut" @change="if (editForm.dateFin && editForm.dateFin < editForm.dateDebut) editForm.dateFin = editForm.dateDebut" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date de départ *</label>
-              <input type="date" x-model="editForm.dateFin" :min="editForm.dateDebut" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Adultes</label>
-              <div class="flex items-center rounded-lg border bg-white focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden">
-                <button type="button" @click="editForm.nbAdulte = Math.max(1, (editForm.nbAdulte || 1) - 1)" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-r">-</button>
-                <input type="number" min="1" x-model.number="editForm.nbAdulte" class="w-full text-center py-2 text-sm outline-none font-bold text-slate-700">
-                <button type="button" @click="editForm.nbAdulte = (editForm.nbAdulte || 0) + 1" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-l">+</button>
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Enfants</label>
-              <div class="flex items-center rounded-lg border bg-white focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden">
-                <button type="button" @click="editForm.nbEnfant = Math.max(0, (editForm.nbEnfant || 0) - 1)" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-r">-</button>
-                <input type="number" min="0" x-model.number="editForm.nbEnfant" :class="{'zero-clair': editForm.nbEnfant === 0}" class="w-full text-center py-2 text-sm outline-none font-bold text-slate-700 transition-colors">
-                <button type="button" @click="editForm.nbEnfant = (editForm.nbEnfant || 0) + 1" class="w-10 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition border-l">+</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Téléphone</label>
-              <input type="tel" x-model="editForm.telephone" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email</label>
-              <input type="email" x-model="editForm.email" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-3 gap-4">
-            <div class="col-span-3">
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Adresse</label>
-              <input type="text" x-model="editForm.adresse" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Code Postal</label>
-              <input type="text" x-model="editForm.codePostal" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Ville</label>
-              <input type="text" x-model="editForm.ville" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pays</label>
-              <input type="text" x-model="editForm.pays" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-            </div>
-          </div>
-
-          <div class="flex justify-end space-x-3 pt-4 border-t">
-            <button type="button" @click="showModalEdit = false" class="px-4 py-2 border rounded-lg text-slate-600 font-medium hover:bg-slate-50">Annuler</button>
-            <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-semibold shadow">Mettre à jour</button>
-          </div>
-        </form>
-      </div>
     </div>
 
     <!-- MODAL FICHE CLIENT -->
