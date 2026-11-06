@@ -59,11 +59,10 @@ function app() {
     gridTarifs: {},
     comptaData: {},
     showModalNew: false,
-    showModalEdit: false,
     showModalClient: false,
     showModalClientsList: false,
     selectedRes: null,
-donneesParAnnee: {}, // LIGNE À AJOUTER ICI
+    donneesParAnnee: {},
     donnees: { 
       nomConciergerie: '', 
       pctBooking: 19, 
@@ -77,7 +76,6 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
     reservations: [],
 
     form: { nom: '', prenom: '', origine: 'booking', kitBebe: 'non', dateDebut: '', dateFin: '', nbAdulte: 1, nbEnfant: 0, telephone: '', email: '', adresse: '', codePostal: '', ville: '', pays: 'France' },
-    editForm: { id: null, nom: '', prenom: '', origine: 'booking', kitBebe: 'non', dateDebut: '', dateFin: '', nbAdulte: 1, nbEnfant: 0, telephone: '', email: '', adresse: '', codePostal: '', ville: '', pays: 'France' },
     isLoaded: false,
     saveTimeout: null,
 
@@ -94,7 +92,9 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
           }
           this.isLoaded = true;
           this.syncCustomReservationLines();
-          this.recalculateAllReservations();
+          this.renderCalendar();
+          this.syncCustomReservationLines();
+          this.recalculateAllReservations(); // <-- LIGNE À REMETTRE ICI
           this.renderCalendar();
         }
       } catch (e) {
@@ -177,15 +177,10 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
           }
           
           this.isLoaded = true;
+          this.recalculateAllReservations(); // Recalcul avec les tarifs qui viennent de charger
           this.saveLocalBackup();
           this.renderCalendar();
           this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
-
-          if (!this.autoSyncBookingStarted && this.donnees && this.donnees.urlBookingIcal) {
-            this.autoSyncBookingStarted = true;
-            setTimeout(() => { this.syncBookingICal(false); }, 3000);
-            setInterval(() => { this.syncBookingICal(false); }, 7200000);
-          }
         }
       }, (err) => console.warn("Erreur config Firebase :", err.message));
 
@@ -197,7 +192,7 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
         this.cleanDuplicates();
         this.saveLocalBackup();
         this.syncCustomReservationLines();
-        this.recalculateAllReservations();
+        this.recalculateAllReservations(); // Recalcul avec les résas qui viennent de charger
         this.renderCalendar();
         this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
       }, (err) => console.error("Erreur lecture résas :", err));
@@ -284,169 +279,6 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       }, 800);
     },
 
-    // --- SYNCHRONISATION BOOKING ICAL VIA FIREBASE CLOUD FUNCTION ---
-    async syncBookingICal(manual = false) {
-      if (!this.donnees.urlBookingIcal) {
-        if (manual) alert("Veuillez renseigner le lien iCal Booking.com dans l'onglet Données.");
-        return;
-      }
-
-      try {
-        const separator = this.donnees.urlBookingIcal.includes('?') ? '&' : '?';
-        const finalBookingUrl = this.donnees.urlBookingIcal + separator + "v=" + Date.now();
-        const cloudFunctionUrl = "https://us-central1-rochersaintpierre1h.cloudfunctions.net/getBookingIcal?url=" + encodeURIComponent(finalBookingUrl);
-
-        const res = await fetch(cloudFunctionUrl);
-        if (!res.ok) throw new Error("Impossible de télécharger le calendrier via la Cloud Function.");
-
-        const text = await res.text();
-        if (!text.includes("BEGIN:VCALENDAR")) {
-          throw new Error("Le fichier récupéré n'est pas un calendrier valide.");
-        }
-
-        const events = this.parseICSBooking(text);
-        
-        const maxAllowedYear = new Date().getFullYear() + 1;
-        const validEvents = events.filter(evt => {
-          const evtYear = parseInt(evt.start.split('-')[0], 10);
-          return evtYear <= maxAllowedYear;
-        });
-
-        this.cleanDuplicates();
-
-        let nbrNouveaux = 0;
-        let nbrModifies = 0;
-        let nbrSupprimes = 0;
-
-        validEvents.forEach(evt => {
-          let existingRes = this.reservations.find(r => 
-            (r.bookingUid && r.bookingUid === evt.uid) ||
-            ((r.origine === 'booking' || r.codeTarif === 'booking') && r.dateDebut === evt.start && r.dateFin === evt.end)
-          );
-
-          if (existingRes) {
-            existingRes.bookingUid = evt.uid;
-            if (existingRes.dateDebut !== evt.start || existingRes.dateFin !== evt.end) {
-              existingRes.dateDebut = evt.start;
-              existingRes.dateFin = evt.end;
-              existingRes.prixTotal = this.calculateStayPrice(evt.start, evt.end, existingRes.codeTarif);
-              db.collection("locations").doc("rocher1H").collection("reservations").doc(String(existingRes.id)).set(existingRes);
-              nbrModifies++;
-            }
-          } else {
-            const newRes = {
-              id: Date.now() + Math.floor(Math.random() * 10000),
-              bookingUid: evt.uid,
-              nom: 'Client',
-              prenom: 'Booking.com',
-              origine: 'booking',
-              codeTarif: 'booking',
-              kitBebe: 'non',
-              dateDebut: evt.start,
-              dateFin: evt.end,
-              nbAdulte: 2,
-              nbEnfant: 0,
-              telephone: '',
-              email: '',
-              adresse: '',
-              codePostal: '',
-              ville: '',
-              pays: 'France',
-              acompte: 0,
-              soldePaye: 0,
-              dateVirementAcompte: '',
-              numVirementAcompte: '',
-              dateVirementSolde: '',
-              numVirementSolde: '',
-              cautionRecue: 'non',
-              cautionRendue: 'non',
-              forceMenageNon: 'non',
-              prixTotal: 0
-            };
-            newRes.prixTotal = this.calculateStayPrice(newRes.dateDebut, newRes.dateFin, newRes.codeTarif);
-            
-            this.reservations.push(newRes);
-            db.collection("locations").doc("rocher1H").collection("reservations").doc(String(newRes.id)).set(newRes);
-            nbrNouveaux++;
-          }
-        });
-
-        // Nettoyage des réservations Booking annulées
-        const validUids = validEvents.map(e => e.uid);
-        const resasToDelete = this.reservations.filter(r => 
-          (r.origine === 'booking' || r.codeTarif === 'booking') && 
-          r.bookingUid && 
-          !validUids.includes(r.bookingUid)
-        );
-
-        resasToDelete.forEach(r => {
-          db.collection("locations").doc("rocher1H").collection("reservations").doc(String(r.id)).delete().catch(() => {});
-          nbrSupprimes++;
-        });
-
-        if (resasToDelete.length > 0) {
-          const deleteIds = resasToDelete.map(r => r.id);
-          this.reservations = this.reservations.filter(r => !deleteIds.includes(r.id));
-        }
-
-        this.cleanDuplicates();
-        this.saveLocalBackup();
-
-        const d = new Date();
-        this.lastBookingSync = String(d.getHours()).padStart(2, '0') + 'h' + String(d.getMinutes()).padStart(2, '0');
-
-        if (nbrNouveaux > 0 || nbrModifies > 0 || nbrSupprimes > 0) {
-          this.syncCustomReservationLines();
-          this.saveAll();
-          this.renderCalendar();
-          if (manual) alert(`SUCCÈS : ${nbrNouveaux} ajout(s), ${nbrModifies} modification(s), ${nbrSupprimes} annulation(s).`);
-        } else if (manual) {
-          alert("Aucune nouvelle réservation, modification ou annulation Booking.");
-        }
-      } catch (err) {
-        console.error("Erreur synchro Booking :", err);
-        const d = new Date();
-        this.lastBookingSync = String(d.getHours()).padStart(2, '0') + 'h' + String(d.getMinutes()).padStart(2, '0') + " (Erreur)";
-        if (manual) alert("Erreur lors de la synchronisation : " + err.message);
-      }
-    },
-
-    parseICSBooking(texte) {
-      const events = [];
-      const texteDeplie = texte.replace(/\r?\n[ \t]/g, "");
-      const lignes = texteDeplie.split(/\r?\n/);
-      let start = null;
-      let end = null;
-      let uid = null;
-
-      lignes.forEach(l => {
-        const line = l.trim();
-        if (line.startsWith("UID:")) {
-          uid = line.substring(4).trim();
-        } else if (line.startsWith("DTSTART")) {
-          const m = line.match(/\d{8}/);
-          if (m) {
-            const d = m[0];
-            start = `${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}`;
-          }
-        } else if (line.startsWith("DTEND")) {
-          const m = line.match(/\d{8}/);
-          if (m) {
-            const d = m[0];
-            end = `${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}`;
-          }
-        } else if (line.startsWith("END:VEVENT")) {
-          if (start && end) {
-            events.push({ uid: uid || `${start}_${end}`, start, end });
-          }
-          start = null;
-          end = null;
-          uid = null;
-        }
-      });
-      return events;
-    },
-
     switchTab(tabName) {
       this.tab = tabName;
       this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
@@ -503,18 +335,15 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       });
       
       clients.sort((a, b) => a.nom.localeCompare(b.nom));
-
       const indispoIdx = clients.findIndex(c => {
          const fullName = (c.nom + ' ' + (c.prenom || '')).toLowerCase().trim();
          const reverseName = ((c.prenom || '') + ' ' + c.nom).toLowerCase().trim();
          return fullName === 'indispo perso' || reverseName === 'indispo perso';
       });
-      
       if (indispoIdx > -1) {
          const indispoClient = clients.splice(indispoIdx, 1)[0];
          clients.unshift(indispoClient);
       }
-      
       return clients;
     },
 
@@ -583,40 +412,6 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       }
     },
 
-    loadClientIntoEditForm(clientId) {
-      if (!clientId) return;
-      
-      const refRes = this.reservations.find(r => String(r.id) === String(clientId));
-      if (!refRes) return;
-
-      const nom = (refRes.nom || '').toLowerCase().trim();
-      const prenom = (refRes.prenom || '').toLowerCase().trim();
-      
-      const pastStays = this.reservations.filter(r => 
-        (r.nom || '').toLowerCase().trim() === nom && 
-        (r.prenom || '').toLowerCase().trim() === prenom
-      );
-
-      pastStays.sort((a, b) => (b.dateDebut || '').localeCompare(a.dateDebut || ''));
-      const c = pastStays[0];
-
-      if (c) {
-        this.editForm.nom = c.nom || ''; 
-        this.editForm.prenom = c.prenom || '';
-        this.editForm.telephone = c.telephone || ''; 
-        this.editForm.email = c.email || '';
-        this.editForm.adresse = c.adresse || ''; 
-        this.editForm.codePostal = c.codePostal || '';
-        this.editForm.ville = c.ville || ''; 
-        this.editForm.pays = c.pays || 'France';
-        
-        if (c.origine) this.editForm.origine = c.origine;
-        if (c.nbAdulte !== undefined) this.editForm.nbAdulte = Number(c.nbAdulte);
-        if (c.nbEnfant !== undefined) this.editForm.nbEnfant = Number(c.nbEnfant);
-        if (c.kitBebe) this.editForm.kitBebe = c.kitBebe;
-      }
-    },
-
     roundToMultiple(val, step = 10) { return Math.round(val / step) * step; },
     calculateBookingPrice(publicPrice) {
       if (!publicPrice) return 0;
@@ -624,23 +419,6 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       const menage = Number(this.donnees.prixMenage) || 0;
       return this.roundToMultiple(publicPrice * (1 + (pct / 100)) + menage, 10);
     },
-
-    recalcRowBooking(row) {
-      row.booking = this.calculateBookingPrice(Number(row.public) || 0);
-      row.correction = row.booking;
-      this.onTarifChange();
-    },
-
-    updateAllBookingTarifs() {
-      Object.keys(this.gridTarifs).forEach(k => {
-        const row = this.gridTarifs[k];
-        row.booking = this.calculateBookingPrice(Number(row.public) || 0);
-        if (!row.correction) row.correction = row.booking;
-      });
-      this.onTarifChange();
-    },
-
-    onTarifChange() { this.saveAll(); this.recalculateAllReservations(); },
 
     getReservationStatus(res) {
       if (!res) return 'option';
@@ -665,8 +443,6 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       }
       return this.comptaData[key];
     }, 
-
-    saveComptaData() { this.saveAll(); },
 
     get comptaMetrics() {
       const yr = String(this.currentYear);
@@ -711,31 +487,7 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       const nbPerso = yearRes.filter(r => String(r.codeTarif).toLowerCase().trim() === 'perso' || String(r.origine).toLowerCase().trim() === 'perso').length;
       
       return { 
-        totalGainBrut, 
-        totalOfficiel, 
-        taxeCalculer, 
-        nbNuitsTotal, 
-        nbNuitsOfficiel, 
-        nbSemaines, 
-        tauxOccupation, 
-        paiementsRecus, 
-        paiementsARecevoir, 
-        nbMenages, 
-        menageEnPlus, 
-        totalMenagesConciergerie: nbMenages + menageEnPlus, 
-        nbRemiseCles, 
-        nbPerso: nbPerso,
-        coutTotalConciergerie, 
-        nbSejours, 
-        nbMoyenPersonnes: nbSejours > 0 ? (totalPersonnes / nbSejours).toFixed(2) : 0,
-        nbOrigineBooking: nbBooking,
-        nbOrigineValloire: nbValloire,
-        nbOrigineRetour: nbRetour,
-        nbOriginePerso: nbPerso,
-        pctOrigineBooking: nbSejours > 0 ? Math.round((nbBooking / nbSejours) * 100) : 0,
-        pctOrigineValloire: nbSejours > 0 ? Math.round((nbValloire / nbSejours) * 100) : 0,
-        pctOrigineRetour: nbSejours > 0 ? Math.round((nbRetour / nbSejours) * 100) : 0,
-        pctOriginePerso: nbSejours > 0 ? Math.round((nbPerso / nbSejours) * 100) : 0
+        totalGainBrut, totalOfficiel, taxeCalculer, nbNuitsTotal, nbNuitsOfficiel, nbSemaines, tauxOccupation, paiementsRecus, paiementsARecevoir, nbMenages, menageEnPlus, totalMenagesConciergerie: nbMenages + menageEnPlus, nbRemiseCles, nbPerso: nbPerso, coutTotalConciergerie, nbSejours, nbMoyenPersonnes: nbSejours > 0 ? (totalPersonnes / nbSejours).toFixed(2) : 0, nbOrigineBooking: nbBooking, nbOrigineValloire: nbValloire, nbOrigineRetour: nbRetour, nbOriginePerso: nbPerso, pctOrigineBooking: nbSejours > 0 ? Math.round((nbBooking / nbSejours) * 100) : 0, pctOrigineValloire: nbSejours > 0 ? Math.round((nbValloire / nbSejours) * 100) : 0, pctOrigineRetour: nbSejours > 0 ? Math.round((nbRetour / nbSejours) * 100) : 0, pctOriginePerso: nbSejours > 0 ? Math.round((nbPerso / nbSejours) * 100) : 0
       };
     },
 
@@ -759,11 +511,16 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       return this.comptaMetrics.taxeCalculer + this.comptaMetrics.coutTotalConciergerie + (Number(d.assuranceAppart)||0) + (Number(d.assuranceCredit)||0) + this.comptaTotalRambaud + this.comptaTotalSorea + this.comptaTotalTaxesDirectes + (Number(d.forfait)||0) + (Number(d.centralResa)||0) + (Number(d.internet)||0) + this.comptaTotalAutres + this.comptaCalculImpots.totalImpots;
     },
 
-    get comptaTaxeRestante() {
+   get comptaTaxeRestante() {
       const yearObj = this.getComptaYearData(this.currentYear);
-      return Math.max(0, this.comptaMetrics.taxeCalculer - (Number(yearObj.taxePayee)||0) - (Number(yearObj.taxeARetirer)||0));
+      const taxePayeeTotale = (Number(yearObj.taxePayee) || 0) + 
+                              (Number(yearObj.taxePayeeT1) || 0) + 
+                              (Number(yearObj.taxePayeeT2) || 0) + 
+                              (Number(yearObj.taxePayeeT3) || 0) + 
+                              (Number(yearObj.taxePayeeT4) || 0);
+      return Math.max(0, this.comptaMetrics.taxeCalculer - taxePayeeTotale - (Number(yearObj.taxeARetirer) || 0));
     },
-
+    
     get comptaRestantTotal() { return this.comptaMetrics.totalGainBrut - this.comptaTotalGeneralCharges; },
     get comptaPourcentageRatio() { return this.comptaTotalGeneralCharges === 0 ? 0 : (this.comptaMetrics.totalGainBrut / this.comptaTotalGeneralCharges) * 100; },
     get comptaCreditAnnuel() { return 5551.20; },
@@ -774,16 +531,9 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
     isDateClosed(dateStr) {
       if (!dateStr) return false;
       const yr = dateStr.split('-')[0];
-      // On cherche les données de l'année spécifique, sinon on prend les données par défaut
       const dSettings = (this.donneesParAnnee && this.donneesParAnnee[yr]) ? this.donneesParAnnee[yr] : this.donnees;
       if (!dSettings || !dSettings.fermetures) return false;
       return dSettings.fermetures.some(f => f.debut && f.fin && dateStr >= f.debut && dateStr <= f.fin);
-    },
-
-    clearFermeture(index) {
-      this.donnees.fermetures[index] = { debut: '', fin: '' };
-      this.saveAll();
-      this.renderCalendar();
     },
 
     getColorForRes(res, isClosed) {
@@ -848,15 +598,10 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       }
     },
 
-    deleteGridRow(key) {
-      if (confirm('Effacer cette ligne de tarif sur-mesure ?')) {
-        delete this.gridTarifs[key]; this.saveAll(); this.recalculateAllReservations(); this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
-      }
-    },
-
     get filteredGridTarifs() { return Object.values(this.gridTarifs).filter(r => r.startISO && r.startISO.startsWith(String(this.currentYear))).sort((a, b) => a.startISO.localeCompare(b.startISO)); },
     get filteredReservationsByYear() { return this.reservations.filter(r => r.dateDebut && r.dateDebut.startsWith(String(this.currentYear))).sort((a, b) => a.dateDebut.localeCompare(b.dateDebut)); },
     get filteredPaiementsByYear() { return this.filteredReservationsByYear.filter(r => !this.isPerso(r)); },
+    
     getTarifRowForStay(dateDebut, dateFin) {
       const customKey = `CUST-${dateDebut}_${dateFin}`;
       if (this.gridTarifs[customKey]) return this.gridTarifs[customKey];
@@ -882,7 +627,15 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
     },
 
     calcMenage(res) { return (!res || res.forceMenageNon === 'oui' || res.codeTarif === 'perso') ? 0 : (['public', 'libre', 'black'].includes(res.codeTarif || 'public') ? (Number(this.donnees.prixMenage) || 0) : 0); },
-    calcTaxeSejour(res) { return (!res || ['perso', 'black', 'booking'].includes(res.codeTarif || 'public')) ? 0 : (this.calcNights(res.dateDebut, res.dateFin) * (Number(res.nbAdulte) || 0) * (Number(this.donnees.taxeSejour) || 0)); },
+    calcTaxeSejour(res) { 
+      if (!res || !res.dateDebut || ['perso', 'black', 'booking'].includes(res.codeTarif || 'public')) return 0;
+      const yr = res.dateDebut.split('-')[0];
+      let rate = Number(this.donnees.taxeSejour) || 0;
+      if (this.donneesParAnnee && this.donneesParAnnee[yr] && this.donneesParAnnee[yr].taxeSejour !== undefined) {
+        rate = Number(this.donneesParAnnee[yr].taxeSejour);
+      }
+      return this.calcNights(res.dateDebut, res.dateFin) * (Number(res.nbAdulte) || 0) * rate; 
+    },
     calcTotalSejour(res) { return !res ? 0 : (Number(res.prixTotal) || 0) + this.calcMenage(res) + this.calcTaxeSejour(res); },
     
     calcAcompte(res) {
@@ -893,12 +646,10 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
     
     calcResteAPayer(res) { return !res ? 0 : Math.max(0, this.calcTotalSejour(res) - (Number(res.acompte) || 0) - (Number(res.soldePaye) || 0)); },
 
-    updateReservationTarif(res) { res.prixTotal = this.calculateStayPrice(res.dateDebut, res.dateFin, res.codeTarif); this.saveReservation(res); },
     recalculateAllReservations() { this.reservations.forEach(r => { if (!r.codeTarif) r.codeTarif = 'public'; r.prixTotal = this.calculateStayPrice(r.dateDebut, r.dateFin, r.codeTarif); }); },
 
     openModalNewRes() { this.form = { nom: '', prenom: '', origine: 'booking', kitBebe: 'non', dateDebut: '', dateFin: '', nbAdulte: 1, nbEnfant: 0, telephone: '', email: '', adresse: '', codePostal: '', ville: '', pays: 'France' }; this.showModalNew = true; },
-    openModalEditRes(res) { this.editForm = { ...res }; this.showModalEdit = true; this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); }); },
-
+    
     onStartDateChange() { if (this.form.dateFin && this.form.dateFin < this.form.dateDebut) this.form.dateFin = this.form.dateDebut; },
 
     submitReservation() {
@@ -927,35 +678,6 @@ donneesParAnnee: {}, // LIGNE À AJOUTER ICI
       this.saveAll(); 
       this.renderCalendar();
       this.showModalNew = false; 
-    },
-
-    submitEditReservation() {
-      if (this.editForm.dateFin <= this.editForm.dateDebut) return alert('La date de départ doit être après l\'arrivée.');
-      
-      this.editForm.prixTotal = this.calculateStayPrice(this.editForm.dateDebut, this.editForm.dateFin, this.editForm.codeTarif);
-      
-      const idx = this.reservations.findIndex(r => r.id === this.editForm.id);
-      if (idx !== -1) this.reservations[idx] = { ...this.editForm };
-      this.saveLocalBackup();
-
-      db.collection("locations").doc("rocher1H").collection("reservations").doc(String(this.editForm.id)).set(this.editForm);
-      
-      this.syncCustomReservationLines();
-      this.saveAll(); 
-      this.renderCalendar();
-      this.showModalEdit = false; 
-    },
-
-    deleteReservation(id) {
-      if (confirm('Voulez-vous vraiment supprimer cette réservation ?')) {
-        this.reservations = this.reservations.filter(r => r.id !== id);
-        this.saveLocalBackup();
-
-        db.collection("locations").doc("rocher1H").collection("reservations").doc(String(id)).delete();
-        
-        this.syncCustomReservationLines();
-        this.saveAll(); 
-      }
     },
 
     openClientCard(res) { this.selectedRes = res; this.showModalClient = true; this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); }); },
