@@ -248,7 +248,7 @@ function app() {
         const dataToSave = {
           donnees: this.donnees,
           gridTarifs: this.gridTarifs,
-          comptaData: this.comptaData
+          comptaData: this.comptaData,
           reservations: this.reservations // <- AJOUTER CETTE LIGNE
         };
         const cleanData = JSON.parse(JSON.stringify(dataToSave));
