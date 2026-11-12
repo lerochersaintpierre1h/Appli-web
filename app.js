@@ -170,11 +170,6 @@ function app() {
           if (data.gridTarifs) this.gridTarifs = data.gridTarifs;
           if (data.comptaData) this.comptaData = data.comptaData;
           
-          if (data.reservations) {
-            db.collection("locations").doc("rocher1H").update({
-              reservations: firebase.firestore.FieldValue.delete()
-            }).catch(() => {});
-          }
           
           this.isLoaded = true;
           this.recalculateAllReservations(); // Recalcul avec les tarifs qui viennent de charger
@@ -254,6 +249,7 @@ function app() {
           donnees: this.donnees,
           gridTarifs: this.gridTarifs,
           comptaData: this.comptaData
+          reservations: this.reservations // <- AJOUTER CETTE LIGNE
         };
         const cleanData = JSON.parse(JSON.stringify(dataToSave));
 
